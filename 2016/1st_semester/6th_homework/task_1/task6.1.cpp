@@ -93,60 +93,60 @@ void printLongNumber(char *number, int point)
 
 bool printSpecialDoubles(double value)
 {
-	uint64_t code = *reinterpret_cast<uint64_t*>(&value);
-	
-	const uint64_t null =             0x0000000000000000;
-	const uint64_t nullNegative =     0x8000000000000000;
-	const uint64_t infinity =         0x7ff0000000000000;
-	const uint64_t infinityNegative = 0xfff0000000000000;
-	const uint64_t nan =              0x7fffffffffffffff;
-	
-	if (code == null)
-	{
-		cout << "0.0";
-		return true;
-	}
-	if (code == nullNegative)
-	{
-		cout << "-0.0";
-		return true;
-	}
-	if (code == infinity)
-	{
-		cout << "+inf";
-		return true;
-	}
-	if (code == infinityNegative)
-	{
-		cout << "-inf";
-		return true;
-	}
-	if (code == nan)
-	{
-		cout << "NaN";
-		return true;
-	}
-	
-	return false;
+    uint64_t code = *reinterpret_cast<uint64_t*>(&value);
+    
+    const uint64_t null =             0x0000000000000000;
+    const uint64_t nullNegative =     0x8000000000000000;
+    const uint64_t infinity =         0x7ff0000000000000;
+    const uint64_t infinityNegative = 0xfff0000000000000;
+    const uint64_t nan =              0x7fffffffffffffff;
+    
+    if (code == null)
+    {
+        cout << "0.0";
+        return true;
+    }
+    if (code == nullNegative)
+    {
+        cout << "-0.0";
+        return true;
+    }
+    if (code == infinity)
+    {
+        cout << "+inf";
+        return true;
+    }
+    if (code == infinityNegative)
+    {
+        cout << "-inf";
+        return true;
+    }
+    if (code == nan)
+    {
+        cout << "NaN";
+        return true;
+    }
+    
+    return false;
 }
 
 uint64_t extractBits(uint64_t source, int start, int length)
 {
-	uint64_t mask = 0;
-	for (int i = 0; i < length; i++)
-		mask = (mask << 1) | 1;
-	return (source >> start) & mask;
+    uint64_t mask = 0;
+    for (int i = 0; i < length; i++)
+        mask = (mask << 1) | 1;
+    return (source >> start) & mask;
 }
 
 void printDouble(double value)
 {
-	if (printSpecialDoubles(value))
-		return;
-	
-	uint64_t code = *reinterpret_cast<uint64_t*>(&value);
+    if (printSpecialDoubles(value))
+        return;
+    
+    uint64_t code = *reinterpret_cast<uint64_t*>(&value);
 
-	uint64_t fraction = extractBits(code, 0, fractionBits);
-	int64_t exponent = extractBits(code, fractionBits, exponentBits);
+    uint64_t fraction = extractBits(code, 0, fractionBits);
+    int64_t exponent = extractBits(code, fractionBits, exponentBits);
     uint64_t sign = extractBits(code, fractionBits + exponentBits, numberSignBits);
 
     char sum[64] = "01"; //10
@@ -171,10 +171,10 @@ void printDouble(double value)
 
 double enterDouble(const char *what)
 {
-	double value = 0.0;
-	cout << "Enter " << what << ": ";
-	cin >> value;
-	return value;
+    double value = 0.0;
+    cout << "Enter " << what << ": ";
+    cin >> value;
+    return value;
 }
 
 int main()
