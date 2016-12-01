@@ -1,5 +1,8 @@
 #include <iostream>
+#include <fstream>
+#include <limits.h>
 #include "PriorityQueue.h"
+#include "DijkstraSearch.h"
 
 using namespace std;
 
@@ -75,6 +78,65 @@ bool priorityQueueTest()
     return status;
 }
 
+void inputString(char *buffer, const char *what)
+{
+    cout << "Enter " << what << ": ";
+    cin >> buffer;
+}
+
+DijkstraSearchEngine *prepareData(ifstream &file, int &cities)
+{
+    int roads = 0;
+
+    file >> cities >> roads;
+
+    DijkstraSearchEngine *engine = createDijkstraSearchEngine(cities);
+
+    for (int i = 0; i < roads; i++)
+    {
+        int left = 0;
+        int right = 0;
+        int length = 0;
+        file >> left >> right >> length;
+        addLink(engine, left, right, length);
+    }
+
+    return engine;
+}
+
+void findPathes(DijkstraSearchEngine *engine, int *order, int &count)
+{
+    bool process = true;
+    while (process)
+    {
+        int status = step(engine);
+        if (status == INT_MIN)
+            process = false;
+        else
+        {
+            order[count] = status;
+            count++;
+        }
+    }
+}
+
+void printResult(DijkstraSearchEngine *engine, int *order, int count)
+{
+    for (int i = 0; i < count; i++)
+    {
+        Path *path = getPath(engine, order[i]);
+
+        cout << "step-" << i << " city-" << order[i] << " distance-" << path->length << " path-";
+
+        for (int j = 0; j < path->nodeCount; j++)
+            cout << path->nodes[j] << (j < path->nodeCount - 1 ? "," : "");
+
+        cout << endl;
+
+        deletePath(path);
+    }
+}
+
 int main()
 {
     if (!priorityQueueTest())
@@ -83,7 +145,24 @@ int main()
         return 1;
     }
 
+    const int fileNameSize = 256;
+    char fileName[fileNameSize] = {'\0'};
+    inputString(fileName, "the name of file");
+    ifstream file(fileName);
 
+    int cities = 0;
+    DijkstraSearchEngine *engine = prepareData(file, cities);
+
+    startSearch(engine, 0);
+
+    int *order = new int[cities];
+    int count = 0;
+
+    findPathes(engine, order, count);
+    printResult(engine, order, count);
+
+    delete[] order;
+    deleteEngine(engine);
 
     return 0;
 }

@@ -113,6 +113,36 @@ int dequeue(PriorityQueue *queue)
     return value;
 }
 
+bool exists(PriorityQueue *queue, int value)
+{
+    if (isEmpty(queue))
+        return false;
+
+    for (int i = 0; i < queue->size; i++)
+        if (queue->data[i].value == value)
+            return true;
+
+    return false;
+}
+
+bool remove(PriorityQueue *queue, int value)
+{
+    if (isEmpty(queue))
+        return false;
+    \
+    int index = 0;
+    while (index < queue->size && queue->data[index].value != value)
+        index++;
+
+    if (index < queue->size)
+    {
+        queue->data[index] = queue->data[queue->size - 1];
+        queue->size--;
+
+        moveDown(queue, index);
+    }
+}
+
 bool isEmpty(PriorityQueue *queue)
 {
     return queue->size == 0;
