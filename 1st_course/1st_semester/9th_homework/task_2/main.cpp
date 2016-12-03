@@ -146,6 +146,8 @@ int main()
 
     AstarSearchEngine *engine = prepareData(file, map, mapSize, width, height);
 
+    file.close();
+
     Point startPoint =  inputPoint("the start point (x y)");
     Point destination = inputPoint("the destination point (x y)");
 

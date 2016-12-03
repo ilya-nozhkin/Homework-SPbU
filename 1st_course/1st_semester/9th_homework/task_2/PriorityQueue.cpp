@@ -154,6 +154,8 @@ bool remove(PriorityQueue *queue, Point value)
 
         moveDown(queue, index);
     }
+
+    return true;
 }
 
 bool isEmpty(PriorityQueue *queue)
