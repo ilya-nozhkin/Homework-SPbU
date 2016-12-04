@@ -21,7 +21,7 @@ void reallocate(char *&buffer, int dataSize, int newSize)
     buffer = newBuffer;
 }
 
-char *readFile(ifstream &file)
+char *readLine(ifstream &file)
 {
     const int initialBufferSize = 16;
     const int inflateFactor = 2;
@@ -30,17 +30,22 @@ char *readFile(ifstream &file)
     char *buffer = new char[bufferSize];
 
     int cursor = 0;
-    while (!file.eof())
+    bool process = true;
+    while (process && !file.eof())
     {
-        char symbol = 0;
-        file >> symbol;
-        buffer[cursor] = symbol;
-        cursor++;
-
-        if (cursor == bufferSize - 1)
+        char symbol = file.get();
+        if (symbol == '\n')
+            process = false;
+        else
         {
-            bufferSize *= inflateFactor;
-            reallocate(buffer, cursor, bufferSize);
+            buffer[cursor] = symbol;
+            cursor++;
+
+            if (cursor == bufferSize - 1)
+            {
+                bufferSize *= inflateFactor;
+                reallocate(buffer, cursor, bufferSize);
+            }
         }
     }
 
@@ -75,7 +80,7 @@ char *readData(const char *fileName)
     if (!checkFile(sourceFile))
         return nullptr;
 
-    char *source = readFile(sourceFile);
+    char *source = readLine(sourceFile);
 
     sourceFile.close();
 
