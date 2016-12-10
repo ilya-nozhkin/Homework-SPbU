@@ -111,6 +111,13 @@ void outputStatistics(const char *data, HuffmanResult *result)
     cout << "compress factor: " << ((float) before / after) << endl;
 }
 
+enum Error
+{
+    noErrors = 0,
+    readDataError = 1,
+    writeDataError = 2
+};
+
 int main()
 {
     const int fileNameSize = 256;
@@ -120,7 +127,7 @@ int main()
 
     char *source = readData(sourceName);
     if (source == nullptr)
-        return 1;
+        return readDataError;
 
     HuffmanResult *result = compress(source);
 
@@ -135,7 +142,7 @@ int main()
     delete[] source;
 
     if (!status)
-        return 2;
+        return writeDataError;
 
-    return 0;
+    return noErrors;
 }

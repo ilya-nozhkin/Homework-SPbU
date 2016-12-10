@@ -38,20 +38,6 @@ void deleteResult(HuffmanResult *&result)
     result = nullptr;
 }
 
-HuffmanNode *moveNode(HuffmanNode &node)
-{
-    HuffmanNode *copy = new HuffmanNode;
-    *copy = node;
-
-    node.leaf = false;
-    node.symbol = 0;
-    node.count = 0;
-    node.left = nullptr;
-    node.right = nullptr;
-
-    return copy;
-}
-
 void initializeLeaf(HuffmanNode &node, unsigned char symbol)
 {
     node.leaf = true;
@@ -111,8 +97,11 @@ void makeTree(HuffmanNode *nodes, int symbols)
 
     while (symbols > 1)
     {
-        HuffmanNode *left = moveNode(nodes[symbols - 2]);
-        HuffmanNode *right = moveNode(nodes[symbols - 1]);
+        HuffmanNode *left = new HuffmanNode;
+        *left = nodes[symbols - 2];
+
+        HuffmanNode *right = new HuffmanNode;
+        *right = nodes[symbols - 1];
 
         symbols--;
         HuffmanNode &last = nodes[symbols - 1];
@@ -120,6 +109,7 @@ void makeTree(HuffmanNode *nodes, int symbols)
         last.count = left->count + right->count;
         last.left = left;
         last.right = right;
+        last.symbol = '\0';
 
         insertionSort(nodes, symbols, symbols - 1);
     }
@@ -151,7 +141,8 @@ void extractCodes(HuffmanNode *node, HuffmanResult *result, uint8_t code, int le
 
 void moveTree(HuffmanResult *result, HuffmanNode &root)
 {
-    result->treeRoot = moveNode(root);
+    result->treeRoot = new HuffmanNode;
+    *result->treeRoot = root;
 }
 
 inline uint8_t getBit(uint8_t byte, int bit)
