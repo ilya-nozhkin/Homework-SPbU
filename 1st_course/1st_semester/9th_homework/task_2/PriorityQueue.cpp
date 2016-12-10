@@ -2,10 +2,23 @@
 
 #include <limits.h>
 
+Point makePoint(int x, int y)
+{
+    Point point;
+    point.x = x;
+    point.y = y;
+    return point;
+}
+
+bool equals(Point left, Point right)
+{
+    return left.x == right.x && left.y == right.y;
+}
+
 struct Data
 {
     int key;
-    int value;
+    Point value;
 };
 
 void swap(Data &left, Data &right)
@@ -85,7 +98,7 @@ void moveDown(PriorityQueue *queue, int index)
     }
 }
 
-bool enqueue(PriorityQueue *queue, int key, int value)
+bool enqueue(PriorityQueue *queue, int key, Point value)
 {
     if (queue->size == queue->maxSize)
         return false;
@@ -99,12 +112,12 @@ bool enqueue(PriorityQueue *queue, int key, int value)
     return true;
 }
 
-int dequeue(PriorityQueue *queue)
+Point dequeue(PriorityQueue *queue)
 {
     if (isEmpty(queue))
-        return INT_MIN;
+        return makePoint(INT_MIN, INT_MIN);
 
-    int value = queue->data[0].value;
+    Point value = queue->data[0].value;
     queue->data[0] = queue->data[queue->size - 1];
     queue->size--;
 
@@ -113,25 +126,25 @@ int dequeue(PriorityQueue *queue)
     return value;
 }
 
-bool exists(PriorityQueue *queue, int value)
+bool exists(PriorityQueue *queue, Point value)
 {
     if (isEmpty(queue))
         return false;
 
     for (int i = 0; i < queue->size; i++)
-        if (queue->data[i].value == value)
+        if (equals(queue->data[i].value, value))
             return true;
 
     return false;
 }
 
-bool remove(PriorityQueue *queue, int value)
+bool remove(PriorityQueue *queue, Point value)
 {
     if (isEmpty(queue))
         return false;
     \
     int index = 0;
-    while (index < queue->size && queue->data[index].value != value)
+    while (index < queue->size && !equals(queue->data[index].value, value))
         index++;
 
     if (index < queue->size)
@@ -141,6 +154,8 @@ bool remove(PriorityQueue *queue, int value)
 
         moveDown(queue, index);
     }
+
+    return true;
 }
 
 bool isEmpty(PriorityQueue *queue)
