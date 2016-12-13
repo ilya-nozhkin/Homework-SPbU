@@ -50,6 +50,8 @@ void deserialize(StateMachine *machine, std::istream &stream)
         machine->rules[i].transitions = new int[machine->stateNumber];
 
         stream >> machine->rules[i].input;
+        if (strcmp(machine->rules[i].input, "\\space\\") == 0)
+            strcpy(machine->rules[i].input, " ");
 
         for (int j = 0; j < machine->stateNumber; j++)
             stream >> machine->rules[i].transitions[j];
@@ -78,7 +80,7 @@ void step(StateMachine *machine, char input)
 {
     int rule = 0;
     bool process = true;
-    while (process && rule < machine->rulesNumber - 1)
+    while (process && rule < machine->rulesNumber)
     {
         bool match = false;
         if (rule == machine->rulesNumber - 1)
