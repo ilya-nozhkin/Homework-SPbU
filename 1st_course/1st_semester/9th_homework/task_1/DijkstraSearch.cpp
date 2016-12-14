@@ -103,6 +103,15 @@ int step(DijkstraSearchEngine *engine)
 
                 enqueue(engine->queue, length, link);
             }
+            else if (length < next.length)
+            {
+                remove(engine->queue, link);
+
+                next.length = length;
+                next.parent = index;
+
+                enqueue(engine->queue, length, link);
+            }
         }
     }
 
