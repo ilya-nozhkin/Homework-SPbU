@@ -1,5 +1,6 @@
 #include "ExpressionAnalyzer.h"
 #include "StateMachine.h"
+#include "Tokenizer.h"
 
 #include <cstring>
 #include <fstream>
@@ -7,113 +8,7 @@
 
 using namespace std;
 
-struct Token
-{
-    char type;
-    int position;
-};
-
-enum TokenizerState
-{
-    firstNumberState = 1,
-    secondNumberState = 3,
-    thirdNumberState = 6,
-    plusState = 7,
-    minusState = 8,
-    multiplyState = 9,
-    divisionState = 10,
-    errorState = 11
-};
-
-void fillToken(Token &token, int state, int position)
-{
-    switch (state)
-    {
-        case firstNumberState:
-        case secondNumberState:
-        case thirdNumberState:
-        {
-            token.type = 'N';
-            break;
-        }
-        case plusState:
-        {
-            token.type = '+';
-            break;
-        }
-        case minusState:
-        {
-            token.type = '-';
-            break;
-        }
-        case multiplyState:
-        {
-            token.type = '*';
-            break;
-        }
-        case divisionState:
-        {
-            token.type = '/';
-            break;
-        }
-    }
-
-    token.position = position;
-}
-
-int tokenize(const char *expression, Token *tokens, const char *tokenizerFSM, int &errorPosition)
-{
-    StateMachine *tokenizer = createStateMachine();
-
-    ifstream table(tokenizerFSM);
-    deserialize(tokenizer, table);
-    table.close();
-
-    int length = strlen(expression);
-
-    int tokensNumber = 0;
-
-    setState(tokenizer, 0);
-    int cursor = 0;
-    int start = 0;
-    bool error = false;
-    while (cursor < length + 1 && !error)
-    {
-        int previous = getState(tokenizer);
-        step(tokenizer, cursor == length ? ' ' : expression[cursor]);
-        int current = getState(tokenizer);
-
-        if (current == errorState)
-            error = true;
-        else
-        {
-            if (current == 0 && current != previous)
-            {
-                fillToken(tokens[tokensNumber], previous, start);
-                start = cursor;
-                tokensNumber++;
-            }
-            else
-            {
-                cursor++;
-                if (current == previous)
-                    start = cursor;
-            }
-        }
-    }
-
-    deleteStateMachine(tokenizer);
-
-    if (error)
-    {
-        errorPosition = cursor;
-        return 0;
-    }
-
-    return tokensNumber;
-}
-
-bool number(Token *tokens, int tokensNumber, int &cursor)
+bool grammarN(Token *tokens, int tokensNumber, int &cursor)
 {
     if (cursor >= tokensNumber)
         return false;
@@ -136,62 +31,129 @@ bool number(Token *tokens, int tokensNumber, int &cursor)
     return false;
 }
 
-bool operations(Token *tokens, int tokensNumber, int &cursor);
+bool grammarT(Token *tokens, int tokensNumber, int &cursor);
 
-bool operation(Token *tokens, int tokensNumber, int &cursor, char type)
+bool grammarTa(Token *tokens, int tokensNumber, int &cursor)
 {
-    if (cursor == tokensNumber) //epsilon
-        return true;
-
-    if (tokens[cursor].type == type)
-    {
-        cursor++;
-        if (number(tokens, tokensNumber, cursor))
-            return operations(tokens, tokensNumber, cursor);
-        else
-            return false;
-    }
-
-    return false;
-}
-
-bool operations(Token *tokens, int tokensNumber, int &cursor)
-{
+    bool status = false;
     int stored = cursor;
 
-    if (operation(tokens, tokensNumber, cursor, '+'))
-        return true;
+    if (cursor < tokensNumber)
+    {
+        if (tokens[cursor].type == '*')
+        {
+            cursor++;
+            status = grammarT(tokens, tokensNumber, cursor);
+            if (status)
+                return true;
+        }
+
+        cursor = stored;
+        if (tokens[cursor].type == '/')
+        {
+            cursor++;
+            status = grammarT(tokens, tokensNumber, cursor);
+            if (status)
+                return status;
+        }
+    }
+
     cursor = stored;
-
-    if (operation(tokens, tokensNumber, cursor, '-'))
-        return true;
-    cursor = stored;
-
-    if (operation(tokens, tokensNumber, cursor, '*'))
-        return true;
-    cursor = stored;
-
-    if (operation(tokens, tokensNumber, cursor, '/'))
-        return true;
-
-    return false;
+    return true; //epsilon
 }
 
-bool base(Token *tokens, int tokensNumber, int &cursor)
+bool grammarT(Token *tokens, int tokensNumber, int &cursor)
 {
-    if (cursor >= tokensNumber)
-        return false;
-
-    if (number(tokens, tokensNumber, cursor))
-        return operations(tokens, tokensNumber, cursor);
+    if (grammarN(tokens, tokensNumber, cursor))
+        return grammarTa(tokens, tokensNumber, cursor);
 
     return false;
 }
 
-//grammar:
-//base -> NO
-//O -> +NO | -NO | *NO | /NO | e
-//where: O - operation, N - number
+bool grammarE(Token *tokens, int tokensNumber, int &cursor);
+
+bool grammarEa(Token *tokens, int tokensNumber, int &cursor)
+{
+    bool status = false;
+    int stored = cursor;
+
+    if (cursor < tokensNumber)
+    {
+        if (tokens[cursor].type == '+')
+        {
+            cursor++;
+            status = grammarE(tokens, tokensNumber, cursor);
+            if (status)
+                return true;
+        }
+
+        cursor = stored;
+        if (tokens[cursor].type == '-')
+        {
+            cursor++;
+            status = grammarE(tokens, tokensNumber, cursor);
+            if (status)
+                return status;
+        }
+    }
+
+    cursor = stored;
+    return true; //epsilon
+}
+
+bool grammarE(Token *tokens, int tokensNumber, int &cursor)
+{
+    if (grammarT(tokens, tokensNumber, cursor))
+        return grammarEa(tokens, tokensNumber, cursor);
+
+    return false;
+}
+
+bool grammarCheck(Token *tokens, int tokensNumber, int &errorToken)
+{
+    int cursor = 0;
+    if (grammarE(tokens, tokensNumber, cursor))
+    {
+        if (cursor != tokensNumber)
+        {
+            errorToken = cursor;
+            return false;
+        }
+        else
+            return true;
+    }
+    return false;
+}
+
+//left-recursive grammar:
+//E -> E + T | E - T | T
+//T -> T * F | T / F | F
+
+//normal grammar:
+//E  -> TE'
+//E' -> +TE' | -TE' | e
+//T  -> NT'
+//T' -> *NT' | /NT' | e
+
+//optimized grammar:
+//E  -> TE'
+//E' -> +E | -E | e
+//T  -> NT'
+//T' -> *T | /T | e
+
+void generateErrorMessage(char *buffer, const char *expression, const char *errorText, int errorPosition)
+{
+    int offset = 0;
+    sprintf(buffer, "%s\n%s\n%n", errorText, expression, &offset);
+
+    for (int i = 0; i < errorPosition; i++)
+        buffer[offset + i] = ' ';
+
+    buffer[offset + errorPosition] = '^';
+    buffer[offset + errorPosition + 1] = '\n';
+    buffer[offset + errorPosition + 2] = '\0';
+}
+
 bool checkExpression(const char *expression, const char *tokenizerFSM, char *errorString)
 {
     Token *tokens = new Token[strlen(expression)];
@@ -203,12 +165,13 @@ bool checkExpression(const char *expression, const char *tokenizerFSM, char *err
     bool status = false;
     if (tokensNumber > 0)
     {
-        int cursor = 0;
-        status = base(tokens, tokensNumber, cursor);
-        sprintf(errorString, "Syntax error");
+        status = grammarCheck(tokens, tokensNumber, errorPosition);
+        if (!status)
+            generateErrorMessage(errorString, expression, "Syntax error (invalid token sequence)",
+                                 tokens[errorPosition].position);
     }
     else
-        sprintf(errorString, "Lexical error on position %d", errorPosition);
+        generateErrorMessage(errorString, expression, "Lexical error (unexpected character)", errorPosition);
 
     delete[] tokens;
     return status;
