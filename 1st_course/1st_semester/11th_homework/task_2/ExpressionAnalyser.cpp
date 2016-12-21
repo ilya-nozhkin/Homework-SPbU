@@ -8,8 +8,29 @@
 
 using namespace std;
 
-bool grammarN(Token *tokens, int tokensNumber, int &cursor)
+//left-recursive grammar:
+//E -> E + T | E - T | T
+//T -> T * N | T / N | N
+//N -> -F | +F | F
+
+//normal grammar:
+//E  -> TE'
+//E' -> +TE' | -TE' | e
+//T  -> NT'
+//T' -> *NT' | /NT' | e
+//N -> -F | +F | F
+
+//optimized grammar:
+//E  -> TE'
+//E' -> +E | -E | e
+//T  -> NT'
+//T' -> *T | /T | e
+//N -> -F | +F | F
+
+bool grammarF(Token *tokens, int tokensNumber, int &cursor)
 {
+    int stored = cursor;
+
     if (cursor >= tokensNumber)
         return false;
 
@@ -19,13 +40,36 @@ bool grammarN(Token *tokens, int tokensNumber, int &cursor)
         return true;
     }
 
-    if (tokensNumber - cursor >= 2 &&
-        (tokens[cursor].type == '-' ||
-         tokens[cursor].type == '+') &&
-        tokens[cursor + 1].type == 'N')
+    cursor = stored;
+    return false;
+}
+
+bool grammarN(Token *tokens, int tokensNumber, int &cursor)
+{
+    bool status = false;
+    int stored = cursor;
+
+    if (cursor < tokensNumber)
     {
-        cursor += 2;
-        return true;
+        if (tokens[cursor].type == '-')
+        {
+            cursor++;
+            status = grammarF(tokens, tokensNumber, cursor);
+            if (status)
+                return true;
+        }
+
+        cursor = stored;
+        if (tokens[cursor].type == '+')
+        {
+            cursor++;
+            status = grammarF(tokens, tokensNumber, cursor);
+            if (status)
+                return true;
+        }
+
+        cursor = stored;
+        return grammarF(tokens, tokensNumber, cursor);
     }
 
     return false;
@@ -124,22 +168,6 @@ bool grammarCheck(Token *tokens, int tokensNumber, int &errorToken)
     }
     return false;
 }
-
-//left-recursive grammar:
-//E -> E + T | E - T | T
-//T -> T * F | T / F | F
-
-//normal grammar:
-//E  -> TE'
-//E' -> +TE' | -TE' | e
-//T  -> NT'
-//T' -> *NT' | /NT' | e
-
-//optimized grammar:
-//E  -> TE'
-//E' -> +E | -E | e
-//T  -> NT'
-//T' -> *T | /T | e
 
 void generateErrorMessage(char *buffer, const char *expression, const char *errorText, int errorPosition)
 {
