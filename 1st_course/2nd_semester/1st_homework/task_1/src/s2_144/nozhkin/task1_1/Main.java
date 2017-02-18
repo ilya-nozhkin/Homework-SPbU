@@ -1,13 +1,14 @@
 package s2_144.nozhkin.task1_1;
 
 public class Main {
+    private static final int testElementsNumber = 128;
 
     public static void main(String[] args) {
         System.out.println(integerTest() ? "Integer test has been passed" : "Integer test hasn't been passed");
         System.out.println(stringTest() ? "String test has been passed" : "String test hasn't been passed");
     }
 
-    public static boolean integerTest() {
+    private static boolean integerTest() {
         Stack<Integer> stack = new Stack<Integer>();
 
         for (int i = 0; i < testElementsNumber; i++)
@@ -30,7 +31,7 @@ public class Main {
         return false; //else stack is not empty
     }
 
-    public static boolean stringTest() {
+    private static boolean stringTest() {
         Stack<String> stack = new Stack<String>();
 
         for (int i = 0; i < testElementsNumber; i++)
@@ -42,6 +43,4 @@ public class Main {
 
         return true;
     }
-
-    private static final int testElementsNumber = 128;
 }

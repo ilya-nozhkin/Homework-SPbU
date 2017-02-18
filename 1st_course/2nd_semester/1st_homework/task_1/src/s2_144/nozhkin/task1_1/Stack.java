@@ -1,6 +1,8 @@
 package s2_144.nozhkin.task1_1;
 
 public class Stack<T> {
+    private Element head;
+
     public Stack() {
         head = null;
     }
@@ -30,6 +32,9 @@ public class Stack<T> {
     }
 
     private class Element {
+        private T value;
+        private Element next;
+
         public Element(T value, Element next) {
             this.value = value;
             this.next = next;
@@ -42,10 +47,5 @@ public class Stack<T> {
         public Element getNext() {
             return next;
         }
-
-        private T value;
-        private Element next;
     }
-
-    private Element head;
 }
