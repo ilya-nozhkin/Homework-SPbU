@@ -1,4 +1,4 @@
-package s2_144.nozhkin;
+package s2_144.nozhkin.task1_1;
 
 public class Stack<T> {
     public Stack() {
