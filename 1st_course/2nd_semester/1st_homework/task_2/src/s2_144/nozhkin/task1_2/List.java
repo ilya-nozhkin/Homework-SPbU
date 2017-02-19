@@ -1,6 +1,7 @@
 package s2_144.nozhkin.task1_2;
 
 import java.util.Iterator;
+import java.util.ListIterator;
 
 public class List<T> implements Iterable<T> {
     private Element head;
@@ -11,7 +12,7 @@ public class List<T> implements Iterable<T> {
         tail = null;
     }
 
-    public void put(T value) {
+    public void add(T value) {
         if (tail == null) {
             head = new Element(value, null);
             tail = head;
@@ -27,8 +28,8 @@ public class List<T> implements Iterable<T> {
     }
 
     @Override
-    public Iterator<T> iterator() {
-        return new ListIterator();
+    public ListIterator<T> iterator() {
+        return new MyListIterator();
     }
 
     private class Element {
@@ -38,6 +39,10 @@ public class List<T> implements Iterable<T> {
         public Element(T value, Element next) {
             this.value = value;
             this.next = next;
+        }
+
+        public void setValue(T value) {
+            this.value = value;
         }
 
         public T getValue() {
@@ -53,15 +58,17 @@ public class List<T> implements Iterable<T> {
         }
     }
 
-    private class ListIterator implements Iterator<T> {
+    private class MyListIterator implements ListIterator<T> {
         Element previousElement;
         Element currentElement;
         Element nextElement;
+        int index;
 
-        public ListIterator() {
+        public MyListIterator() {
             previousElement = null;
             currentElement = null;
             nextElement = head;
+            index = -1;
         }
 
         @Override
@@ -72,13 +79,35 @@ public class List<T> implements Iterable<T> {
         @Override
         public T next() {
             if (nextElement == null)
-                throw new NoNextElementException();
+                return null;
 
             previousElement = currentElement;
             currentElement  = nextElement;
             nextElement     = nextElement.getNext();
 
+            index++;
+
             return currentElement.getValue();
+        }
+
+        @Override
+        public boolean hasPrevious() {
+            return false;
+        }
+
+        @Override
+        public T previous() {
+            return null;
+        }
+
+        @Override
+        public int nextIndex() {
+            return index + 1;
+        }
+
+        @Override
+        public int previousIndex() {
+            return index - 1;
         }
 
         @Override
@@ -96,12 +125,34 @@ public class List<T> implements Iterable<T> {
 
             if (currentElement == null)
                 tail = previousElement;
+
+            index--;
+        }
+
+        @Override
+        public void set(T value) {
+            currentElement.setValue(value);
+        }
+
+        public void add(T value) {
+            if (currentElement == previousElement)
+                throw new AddBeforeNextException();
+
+            if (previousElement == null) {
+                head = new Element(value, head);
+            } else {
+                Element newElement = new Element(value, currentElement);
+                previousElement.setNext(newElement);
+                previousElement = newElement;
+            }
+
+            index++;
         }
     }
 
-    public static class NoNextElementException extends RuntimeException {
-        public NoNextElementException() {
-            super("There is no next element");
+    public static class AddBeforeNextException extends RuntimeException {
+        public AddBeforeNextException() {
+            super("You've tried to add element before calling 'next'");
         }
     }
 
