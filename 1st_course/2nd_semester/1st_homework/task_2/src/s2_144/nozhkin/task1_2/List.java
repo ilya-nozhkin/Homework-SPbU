@@ -1,16 +1,10 @@
 package s2_144.nozhkin.task1_2;
 
-import java.util.Iterator;
 import java.util.ListIterator;
 
 public class List<T> implements Iterable<T> {
-    private Element head;
-    private Element tail;
-
-    public List() {
-        head = null;
-        tail = null;
-    }
+    private Element head = null;
+    private Element tail = null;
 
     public void add(T value) {
         if (tail == null) {
@@ -33,8 +27,8 @@ public class List<T> implements Iterable<T> {
     }
 
     private class Element {
-        private T value;
-        private Element next;
+        private T value = null;
+        private Element next = null;
 
         public Element(T value, Element next) {
             this.value = value;
@@ -59,17 +53,10 @@ public class List<T> implements Iterable<T> {
     }
 
     private class MyListIterator implements ListIterator<T> {
-        Element previousElement;
-        Element currentElement;
-        Element nextElement;
-        int index;
-
-        public MyListIterator() {
-            previousElement = null;
-            currentElement = null;
-            nextElement = head;
-            index = -1;
-        }
+        Element previousElement = null;
+        Element currentElement = null;
+        Element nextElement = head;
+        int index = -1;
 
         @Override
         public boolean hasNext() {

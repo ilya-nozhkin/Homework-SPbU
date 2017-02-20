@@ -4,7 +4,8 @@ import java.util.Iterator;
 import java.util.ListIterator;
 
 public class Main {
-    private static final int testElementsNumber = 128;
+    private static final int integerTestElementsNumber = 128;
+    private static final int stringTestElementsNumber = 128 * 2; //must be divisible by 2
 
     public static void main(String[] args) {
         System.out.println(integerTest() ? "Integer test has been passed" : "Integer test hasn't been passed");
@@ -12,7 +13,7 @@ public class Main {
     }
 
     private static void fillList(List<Integer> list) {
-        for (int i = 0; i < testElementsNumber; i++)
+        for (int i = 0; i < integerTestElementsNumber; i++)
             list.add(i);
     }
 
@@ -32,14 +33,14 @@ public class Main {
     }
 
     private static boolean integerTest() {
-        List<Integer> list = new List<Integer>();
+        List<Integer> list = new List<>();
 
         fillList(list);
 
         ListIterator<Integer> iterator = list.iterator();
 
-        int eraseStart = testElementsNumber / 4;
-        int eraseEnd = testElementsNumber / 2;
+        int eraseStart = integerTestElementsNumber / 4;
+        int eraseEnd = integerTestElementsNumber / 2;
 
         if (!checkAndEraseElements(iterator, eraseStart, eraseEnd, 0))
             return false;
@@ -49,35 +50,35 @@ public class Main {
         if (!checkAndEraseElements(iterator, 0, eraseStart - 1, 0))
             return false;
 
-        if (!checkAndEraseElements(iterator, 0, testElementsNumber - 1 - eraseEnd - 1, eraseEnd + 1))
+        if (!checkAndEraseElements(iterator, 0, integerTestElementsNumber - 1 - eraseEnd - 1, eraseEnd + 1))
             return false;
 
-        if (!list.isEmpty())
-            return false;
-
-        return true;
+        return list.isEmpty();
     }
 
     private static boolean stringTest() {
-        List<String> list = new List<String>();
+        List<String> list = new List<>();
 
-        for (int i = 0; i < testElementsNumber; i++)
-            list.add(Integer.toString(i * 2 + 1));
+        String[] testSet = new String[stringTestElementsNumber];
+        for (int i = 0; i < stringTestElementsNumber; i++)
+            testSet[i] = Integer.toString(i);
+
+        for (int i = 0; i < stringTestElementsNumber / 2; i++)
+            list.add(testSet[i * 2 + 1]);
 
         ListIterator<String> iterator = list.iterator();
 
-        for (int i = 0; i < testElementsNumber; i++) {
-            String expectedValue = Integer.toString(i * 2 + 1);
-            if (!iterator.next().equals(expectedValue))
+        for (int i = 0; i < stringTestElementsNumber / 2; i++) {
+            if (!iterator.next().equals(testSet[i * 2 + 1]))
                 return false;
 
-            iterator.add(Integer.toString(i * 2));
+            iterator.add(testSet[i * 2]);
         }
 
         iterator = list.iterator(); //rewind
 
-        for (int i = 0; i < testElementsNumber * 2; i++) {
-            String expectedValue = Integer.toString(i);
+        for (int i = 0; i < stringTestElementsNumber; i++) {
+            String expectedValue = testSet[i];
             if (!iterator.next().equals(expectedValue))
                 return false;
         }
