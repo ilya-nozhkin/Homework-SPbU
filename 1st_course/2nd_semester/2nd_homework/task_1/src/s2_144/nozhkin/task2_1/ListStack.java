@@ -9,7 +9,7 @@ public class ListStack<T> implements Stack<T> {
     }
 
     @Override
-    public T pop() {
+    public T pop() throws StackIsEmptyException {
         if (head == null)
             throw new StackIsEmptyException();
 

@@ -21,7 +21,7 @@ public class StackTest {
         stringTestData = null;
     }
 
-    public void integerTest(Stack<Integer> stack) {
+    public void integerTest(Stack<Integer> stack) throws Stack.StackIsEmptyException {
         for (int i = 0; i < TEST_ELEMENTS_NUMBER; i++)
             stack.push(i);
 
@@ -33,7 +33,7 @@ public class StackTest {
         stack.pop();
     }
 
-    public void stringTest(Stack<String> stack) {
+    public void stringTest(Stack<String> stack) throws Stack.StackIsEmptyException {
         for (int i = 0; i < TEST_ELEMENTS_NUMBER; i++)
             stringTestData[i] = Integer.toString(i);
 
@@ -45,25 +45,25 @@ public class StackTest {
     }
 
     @Test(expected = Stack.StackIsEmptyException.class)
-    public void integerListStackTest() {
+    public void integerListStackTest() throws Stack.StackIsEmptyException {
         ListStack<Integer> stack = new ListStack<>();
         integerTest(stack);
     }
 
     @Test(expected = Stack.StackIsEmptyException.class)
-    public void integerVectorStackTest() {
+    public void integerVectorStackTest() throws Stack.StackIsEmptyException {
         VectorStack<Integer> stack = new VectorStack<>();
         integerTest(stack);
     }
 
     @Test
-    public void stringListStackTest() {
+    public void stringListStackTest() throws Stack.StackIsEmptyException {
         ListStack<String> stack = new ListStack<>();
         stringTest(stack);
     }
 
     @Test
-    public void stringVectorStackTest() {
+    public void stringVectorStackTest() throws Stack.StackIsEmptyException {
         VectorStack<String> stack = new VectorStack<>();
         stringTest(stack);
     }

@@ -1,7 +1,7 @@
 package s2_144.nozhkin.task2_1;
 
 public class StackCalculator {
-    public static double calculate(String expression) {
+    public static double calculate(String expression) throws UnknownOperatorException, NotEnoughArgumentsException {
         VectorStack<Double> stack = new VectorStack<Double>();
 
         String[] tokens = expression.split(" +");
@@ -10,15 +10,14 @@ public class StackCalculator {
             if (isOperation(tokens[i])) {
                 char operator = tokens[i].charAt(0);
 
-                if (stack.isEmpty())
+                double right = 0;
+                double left = 0;
+                try {
+                    right = stack.pop();
+                    left = stack.pop();
+                } catch (Stack.StackIsEmptyException e) {
                     throw new NotEnoughArgumentsException(operator, i);
-
-                double right = stack.pop();
-
-                if (stack.isEmpty())
-                    throw new NotEnoughArgumentsException(operator, i);
-
-                double left = stack.pop();
+                }
 
                 stack.push(evaluate(operator, left, right));
             } else {
@@ -26,10 +25,16 @@ public class StackCalculator {
             }
         }
 
-        return stack.pop();
+        double result = 0;
+        try {
+            result = stack.pop();
+        } catch (Stack.StackIsEmptyException e) {
+            e.printStackTrace();
+        }
+        return result;
     }
 
-    private static double evaluate(char operator, double left, double right) {
+    private static double evaluate(char operator, double left, double right) throws UnknownOperatorException {
         double result = 0;
         switch (operator) {
             case '+':
@@ -59,13 +64,13 @@ public class StackCalculator {
         return symbol < '0' || symbol > '9';
     }
 
-    public static class UnknownOperatorException extends RuntimeException {
+    public static class UnknownOperatorException extends Exception {
         public UnknownOperatorException(char operator) {
             super("Unknown operator: '" + operator + "'");
         }
     }
 
-    public static class NotEnoughArgumentsException extends RuntimeException {
+    public static class NotEnoughArgumentsException extends Exception {
         public NotEnoughArgumentsException(char operator, int token) {
             super("Not enough arguments for operator '" + operator + "' at token " + token);
         }

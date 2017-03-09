@@ -4,7 +4,8 @@ import s2_144.nozhkin.task2_1.StackCalculator;
 
 public class CalculatorTest {
     @Test
-    public void usualExpressionTest() {
+    public void usualExpressionTest() throws StackCalculator.UnknownOperatorException,
+                                             StackCalculator.NotEnoughArgumentsException {
         Assert.assertTrue(StackCalculator.calculate("12 3 +") == 15);
         Assert.assertTrue(StackCalculator.calculate("12 3 -") == 9);
         Assert.assertTrue(StackCalculator.calculate("12 3 *") == 36);
@@ -25,12 +26,14 @@ public class CalculatorTest {
     }
 
     @Test(expected = StackCalculator.NotEnoughArgumentsException.class)
-    public void illegalExpressionTest() {
+    public void illegalExpressionTest() throws StackCalculator.UnknownOperatorException,
+                                               StackCalculator.NotEnoughArgumentsException {
         StackCalculator.calculate("2 4 + /");
     }
 
     @Test(expected = StackCalculator.UnknownOperatorException.class)
-    public void unknownOperatorTest() {
+    public void unknownOperatorTest() throws StackCalculator.UnknownOperatorException,
+                                             StackCalculator.NotEnoughArgumentsException {
         StackCalculator.calculate("2 4 + 2 ^");
     }
 }

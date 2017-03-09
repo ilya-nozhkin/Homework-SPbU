@@ -13,7 +13,7 @@ public class VectorStack<T> implements Stack<T> {
     }
 
     @Override
-    public T pop() {
+    public T pop() throws StackIsEmptyException {
         if (isEmpty())
             throw new StackIsEmptyException();
 
