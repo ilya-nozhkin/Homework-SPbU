@@ -57,8 +57,8 @@ public class DoublyLinkedList<T> implements List<T> {
 
             if (currentElement != nextElement)
                 previousElement = currentElement;
-            currentElement  = nextElement;
-            nextElement     = nextElement.next;
+            currentElement = nextElement;
+            nextElement = nextElement.next;
 
             index++;
             rightDirection = true;

@@ -1,6 +1,5 @@
 package s2_144.nozhkin.task2_2;
 
-import java.util.Iterator;
 import java.util.ListIterator;
 
 public class SinglyLinkedList<T> implements List<T> {
@@ -54,8 +53,8 @@ public class SinglyLinkedList<T> implements List<T> {
                 return null;
 
             previousElement = currentElement;
-            currentElement  = nextElement;
-            nextElement     = nextElement.next;
+            currentElement = nextElement;
+            nextElement = nextElement.next;
 
             index++;
 
@@ -84,9 +83,6 @@ public class SinglyLinkedList<T> implements List<T> {
 
         @Override
         public void remove() {
-            if (previousElement == currentElement)
-                throw new DoubleRemoveException();
-
             if (previousElement == null) {
                 head = nextElement;
             } else {
@@ -107,9 +103,6 @@ public class SinglyLinkedList<T> implements List<T> {
         }
 
         public void add(T value) {
-            if (currentElement == previousElement)
-                throw new AddBeforeNextException();
-
             if (previousElement == null) {
                 head = new Element(value, head);
             } else {
@@ -119,18 +112,6 @@ public class SinglyLinkedList<T> implements List<T> {
             }
 
             index++;
-        }
-    }
-
-    public static class AddBeforeNextException extends RuntimeException {
-        public AddBeforeNextException() {
-            super("You've tried to add element before calling 'next'");
-        }
-    }
-
-    public static class DoubleRemoveException extends RuntimeException {
-        public DoubleRemoveException() {
-            super("Method 'remove' has been called twice after last 'next' method calling");
         }
     }
 }
