@@ -1,3 +1,4 @@
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -17,6 +18,11 @@ public class SortersTest {
     @Before
     public void initializeResources() {
         generator = new Random();
+    }
+
+    @After
+    public void terminateResources() {
+        generator = null;
     }
 
     private Integer[] generateRandomIntegerSet(int size) {
