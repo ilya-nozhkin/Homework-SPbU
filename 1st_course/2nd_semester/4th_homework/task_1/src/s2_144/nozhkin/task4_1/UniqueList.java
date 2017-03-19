@@ -1,6 +1,5 @@
 package s2_144.nozhkin.task4_1;
 
-import java.util.Iterator;
 import java.util.ListIterator;
 
 public class UniqueList<T> implements List<T> {
