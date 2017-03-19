@@ -12,7 +12,7 @@ public class LinkedList<T> implements List<T> {
             tail = head;
         } else {
             Element newElement = new Element(value, null);
-            tail.setNext(newElement);
+            tail.next = newElement;
             tail = newElement;
         }
     }
@@ -34,22 +34,6 @@ public class LinkedList<T> implements List<T> {
             this.value = value;
             this.next = next;
         }
-
-        public void setValue(T value) {
-            this.value = value;
-        }
-
-        public T getValue() {
-            return value;
-        }
-
-        public void setNext(Element next) {
-            this.next = next;
-        }
-
-        public Element getNext() {
-            return next;
-        }
     }
 
     private class MyListIterator implements ListIterator<T> {
@@ -65,16 +49,17 @@ public class LinkedList<T> implements List<T> {
 
         @Override
         public T next() {
-            if (nextElement == null)
+            if (nextElement == null) {
                 return null;
+            }
 
             previousElement = currentElement;
             currentElement = nextElement;
-            nextElement = nextElement.getNext();
+            nextElement = nextElement.next;
 
             index++;
 
-            return currentElement.getValue();
+            return currentElement.value;
         }
 
         @Override
@@ -102,20 +87,21 @@ public class LinkedList<T> implements List<T> {
             if (previousElement == null) {
                 head = nextElement;
             } else {
-                previousElement.setNext(currentElement.getNext());
+                previousElement.next = currentElement.next;
             }
 
             currentElement = previousElement;
 
-            if (currentElement == null)
+            if (currentElement == null) {
                 tail = previousElement;
+            }
 
             index--;
         }
 
         @Override
         public void set(T value) {
-            currentElement.setValue(value);
+            currentElement.value = value;
         }
 
         public void add(T value) {
@@ -123,7 +109,7 @@ public class LinkedList<T> implements List<T> {
                 head = new Element(value, head);
             } else {
                 Element newElement = new Element(value, currentElement);
-                previousElement.setNext(newElement);
+                previousElement.next = newElement;
                 previousElement = newElement;
             }
 
