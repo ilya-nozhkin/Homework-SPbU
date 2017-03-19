@@ -46,7 +46,7 @@ public class UniqueList<T> implements List<T> {
     }
 
     @Override
-    public Iterator<T> iterator() {
+    public ListIterator<T> iterator() {
         return list.iterator();
     }
 
