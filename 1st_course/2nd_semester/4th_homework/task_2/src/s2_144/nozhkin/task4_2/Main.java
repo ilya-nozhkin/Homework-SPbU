@@ -162,47 +162,5 @@ public class Main {
             System.out.println("Unknown hash function '" + hashName + "'");
         }
     }
-
-    private static class DJB2Hasher implements Hasher<String> {
-        @Override
-        public int hash(String data) {
-            long value = 5381;
-            for (int i = 0; i < data.length(); i++) {
-                value = ((value << 5) + value) + data.charAt(i);
-            }
-
-            return (int) value;
-        }
-    }
-
-    private static class SDBMHasher implements Hasher<String> {
-        @Override
-        public int hash(String data) {
-            long value = 5381;
-            for (int i = 0; i < data.length(); i++) {
-                value = data.charAt(i) + (value << 6) + (value << 16) - value;
-            }
-
-            return (int) value;
-        }
-    }
-
-    private static class SumHasher implements Hasher<String> {
-        @Override
-        public int hash(String data) {
-            long value = 5381;
-            for (int i = 0; i < data.length(); i++) {
-                value += data.charAt(i);
-            }
-
-            return (int) value;
-        }
-    }
-
-    private static class DefaultHasher implements Hasher<String> {
-        @Override
-        public int hash(String data) {
-            return data.hashCode();
-        }
-    }
 }
+
