@@ -22,6 +22,7 @@ public class CalculatorTest extends Application {
     private static Stage primaryStage;
     private static AssertionError assertion = null;
 
+    /** starts the JavaFX application and waits for assertion fails */
     @Test
     public void test() {
         assertion = null;
@@ -30,10 +31,17 @@ public class CalculatorTest extends Application {
             throw assertion;
     }
 
+    /** finds node on scene
+     *
+     * @param selector fx:id of the node
+     * @param <T> type of the node
+     * @return node
+     */
     public static <T> T findNode(String selector) {
         return (T) primaryStage.getScene().lookup(selector);
     }
 
+    /** performs some simple actions with controls and checks results */
     public void calculationTest() {
         Spinner<Double> leftOperand = findNode("#leftOperand");
         Spinner<Double> rightOperand = findNode("#rightOperand");
