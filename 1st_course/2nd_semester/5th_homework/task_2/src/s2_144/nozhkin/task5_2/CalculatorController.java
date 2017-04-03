@@ -9,11 +9,13 @@ import javafx.scene.input.KeyEvent;
 
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.ResourceBundle;
 
 public class CalculatorController implements Initializable {
     /** array for matching operator and it's ID */
-    private static final char[] OPERATION_SYMBOLS = {'+', '-', '*', '/'};
+    private static final List<Character> OPERATION_SYMBOLS = Arrays.asList('+', '-', '*', '/');
 
     /** list of digit buttons */
     @FXML
@@ -45,25 +47,10 @@ public class CalculatorController implements Initializable {
 
         for (int i = 0; i < operationList.size(); i++) {
             final int operationId = i;
-            operationList.get(i).setOnAction(event -> typeOperation(OPERATION_SYMBOLS[operationId]));
+            operationList.get(i).setOnAction(event -> typeOperation(OPERATION_SYMBOLS.get(operationId)));
         }
 
         printState();
-    }
-
-    /**
-     * checks if symbol is operator
-     *
-     * @param symbol character that should be checked
-     * @return true if symbol is +, -, *, /
-     */
-    private static boolean isOperation(char symbol) {
-        for (int i = 0; i < OPERATION_SYMBOLS.length; i++) {
-            if (OPERATION_SYMBOLS[i] == symbol) {
-                return true;
-            }
-        }
-        return false;
     }
 
     /**
@@ -72,18 +59,20 @@ public class CalculatorController implements Initializable {
      * @param keyEvent information about typed key
      */
     public void onKeyTyped(KeyEvent keyEvent) {
-        KeyCode keyCode = keyEvent.getCode();
+        final char backspace = 8;
+        final char enter = 13;
+
         char keyChar = keyEvent.getCharacter().charAt(0);
 
         if (keyChar >= '0' && keyChar <= '9') {
             typeDigit(keyChar - '0');
-        } else if (isOperation(keyChar)) {
+        } else if (OPERATION_SYMBOLS.contains(keyChar)) {
             typeOperation(keyChar);
         } else if (keyChar == '.' || keyChar == ',') {
             typeDot();
-        } else if (keyChar == 8) {
+        } else if (keyChar == backspace) {
             eraseLast();
-        } else if (keyChar == 13) {
+        } else if (keyChar == enter) {
             execute();
         }
     }
