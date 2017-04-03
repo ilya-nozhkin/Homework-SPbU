@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Spinner?>
+<?import javafx.scene.layout.HBox?>
+
+<HBox xmlns="http://javafx.com/javafx/8.0.112" xmlns:fx="http://javafx.com/fxml/1" fx:controller="s2_144.nozhkin.task5_1.CalculatorController">
+   <children>
+      <Spinner fx:id="leftOperand" editable="true" onInputMethodTextChanged="#calculate" prefHeight="26.0" prefWidth="100.0" />
+      <ComboBox fx:id="operation" onAction="#calculate" prefWidth="60.0" visibleRowCount="4" />
+      <Spinner fx:id="rightOperand" editable="true" onInputMethodTextChanged="#calculate" prefWidth="100.0" />
+      <Label prefHeight="26.0" text="=" />
+      <Label fx:id="result" prefHeight="26.0" prefWidth="150.0" text="5" />
+   </children>
+</HBox>
