@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<?import java.util.ArrayList?>
+<VBox onKeyTyped="#onKeyTyped" xmlns="http://javafx.com/javafx/8.0.112" xmlns:fx="http://javafx.com/fxml/1" fx:controller="s2_144.nozhkin.task5_2.CalculatorController">
+   <children>
+      <HBox VBox.vgrow="ALWAYS">
+         <children>
+            <Label fx:id="display" alignment="BOTTOM_RIGHT" contentDisplay="RIGHT" prefHeight="70.0" prefWidth="165.0" style="-fx-border-color: BLACK;" text="0" textAlignment="RIGHT">
+               <font>
+                  <Font size="17.0" />
+               </font>
+               <HBox.margin>
+                  <Insets bottom="10.0" />
+               </HBox.margin>
+               <padding>
+                  <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+               </padding></Label>
+         </children>
+      </HBox>
+      <GridPane alignment="center" hgap="2.0" vgap="2.0">
+         <children>
+            <Button fx:id="digit0" mnemonicParsing="false" prefHeight="30.0" prefWidth="40.0" text="0" GridPane.rowIndex="4" />
+            <Button fx:id="digit1" mnemonicParsing="false" prefHeight="30.0" prefWidth="40.0" text="1" GridPane.rowIndex="3" />
+            <Button fx:id="digit2" mnemonicParsing="false" prefHeight="30.0" prefWidth="40.0" text="2" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+            <Button fx:id="digit3" mnemonicParsing="false" prefHeight="30.0" prefWidth="40.0" text="3" GridPane.columnIndex="2" GridPane.rowIndex="3" />
+            <Button fx:id="digit4" mnemonicParsing="false" prefHeight="30.0" prefWidth="40.0" text="4" GridPane.rowIndex="2" />
+            <Button fx:id="digit5" mnemonicParsing="false" prefHeight="30.0" prefWidth="40.0" text="5" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+            <Button fx:id="digit6" mnemonicParsing="false" prefHeight="30.0" prefWidth="40.0" text="6" GridPane.columnIndex="2" GridPane.rowIndex="2" />
+            <Button fx:id="digit7" mnemonicParsing="false" prefHeight="30.0" prefWidth="40.0" text="7" GridPane.rowIndex="1" />
+            <Button fx:id="digit8" mnemonicParsing="false" prefHeight="30.0" prefWidth="40.0" text="8" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+            <Button fx:id="digit9" mnemonicParsing="false" prefHeight="30.0" prefWidth="40.0" text="9" GridPane.columnIndex="2" GridPane.rowIndex="1" />
+
+            <Button fx:id="dot" mnemonicParsing="false" onAction="#typeDot" prefHeight="30.0" prefWidth="40.0" text="." GridPane.columnIndex="1" GridPane.rowIndex="4" />
+            <Button fx:id="clean" mnemonicParsing="false" onAction="#clean" prefHeight="30.0" prefWidth="40.0" text="C" />
+
+            <Button fx:id="plus" mnemonicParsing="false" prefHeight="30.0" prefWidth="40.0" text="+" GridPane.columnIndex="3" GridPane.rowIndex="3" />
+            <Button fx:id="minus" mnemonicParsing="false" prefHeight="30.0" prefWidth="40.0" text="-" GridPane.columnIndex="3" GridPane.rowIndex="2" />
+            <Button fx:id="multiplication" mnemonicParsing="false" prefHeight="30.0" prefWidth="40.0" text="*" GridPane.columnIndex="3" GridPane.rowIndex="1" />
+            <Button fx:id="division" mnemonicParsing="false" prefHeight="30.0" prefWidth="40.0" text="/" GridPane.columnIndex="3" />
+
+            <Button fx:id="calculate" mnemonicParsing="false" onAction="#execute" prefHeight="30.0" prefWidth="40.0" text="=" GridPane.columnIndex="3" GridPane.rowIndex="4" />
+
+            <fx:define>
+               <ArrayList fx:id="digitList">
+                  <fx:reference source="digit0" />
+                  <fx:reference source="digit1" />
+                  <fx:reference source="digit2" />
+                  <fx:reference source="digit3" />
+                  <fx:reference source="digit4" />
+                  <fx:reference source="digit5" />
+                  <fx:reference source="digit6" />
+                  <fx:reference source="digit7" />
+                  <fx:reference source="digit8" />
+                  <fx:reference source="digit9" />
+               </ArrayList>
+            </fx:define>
+
+            <fx:define>
+               <ArrayList fx:id="operationList">
+                  <fx:reference source="plus" />
+                  <fx:reference source="minus" />
+                  <fx:reference source="multiplication" />
+                  <fx:reference source="division" />
+               </ArrayList>
+            </fx:define>
+
+            <Button mnemonicParsing="false" fx:id="backspace" onAction="#eraseLast" prefHeight="30.0" prefWidth="40.0" text="&lt;" GridPane.columnIndex="1" />
+
+         </children>
+         <rowConstraints>
+            <RowConstraints minHeight="10.0" prefHeight="30.0" />
+            <RowConstraints />
+            <RowConstraints minHeight="10.0" prefHeight="30.0" />
+            <RowConstraints minHeight="10.0" prefHeight="30.0" />
+            <RowConstraints minHeight="10.0" prefHeight="30.0" />
+         </rowConstraints>
+         <columnConstraints>
+            <ColumnConstraints />
+            <ColumnConstraints minWidth="10.0" />
+            <ColumnConstraints minWidth="10.0" />
+            <ColumnConstraints minWidth="10.0" />
+         </columnConstraints>
+      </GridPane>
+   </children>
+   <padding>
+      <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+   </padding>
+
+
+</VBox>
