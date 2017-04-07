@@ -82,10 +82,10 @@ public class PriorityQueueTest {
 
     /** pair of two values - value and priority, array of such pairs can be sorted in descending order */
     private class Pair implements Comparable<Pair> {
-        /** value */
+        /** value that stored in pair */
         int value;
 
-        /** priority */
+        /** priority of the value */
         int priority;
 
         /**
