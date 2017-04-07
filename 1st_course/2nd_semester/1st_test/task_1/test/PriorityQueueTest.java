@@ -38,13 +38,14 @@ public class PriorityQueueTest {
         PriorityQueue<Integer> queue = new ListPriorityQueue<>();
 
         Pair[] testSet = createRandomSet(TEST_SET_SIZE);
-        Pair[] sortedSet = getSortedCopy(testSet);
 
         for (Pair pair : testSet) {
             queue.enqueue(pair.value, pair.priority);
         }
 
-        for (Pair pair : sortedSet) {
+        Arrays.sort(testSet);
+
+        for (Pair pair : testSet) {
             int value = queue.dequeue();
             assertTrue(value == pair.value);
         }
@@ -59,8 +60,9 @@ public class PriorityQueueTest {
     public void dequeueFromEmptyQueueTest() throws PriorityQueue.EmptyQueueException {
         PriorityQueue<Integer> queue = new ListPriorityQueue<>();
 
-        queue.enqueue(5, 10);
-        assertTrue(queue.dequeue() == 5);
+        int value = generator.nextInt();
+        queue.enqueue(value, generator.nextInt());
+        queue.dequeue();
 
         queue.dequeue();
     }
@@ -76,18 +78,6 @@ public class PriorityQueueTest {
         for (int i = 0; i < size; i++)
             set[i] = new Pair(generator.nextInt(), generator.nextInt());
         return set;
-    }
-
-    /**
-     * creates copy of an array and sorts it
-     *
-     * @param array array that should be copied
-     * @return sorted copy
-     */
-    private Pair[] getSortedCopy(Pair[] array) {
-        Pair[] copy = Arrays.copyOf(array, array.length);
-        Arrays.sort(copy);
-        return copy;
     }
 
     /** pair of two values - value and priority, array of such pairs can be sorted in descending order */
