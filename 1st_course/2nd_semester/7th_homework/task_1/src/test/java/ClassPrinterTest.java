@@ -73,7 +73,7 @@ public class ClassPrinterTest {
                 "private static class Annotated {\n\n" +
                 "    public Annotated();\n" +
                 "}\n";
-        System.out.println(ClassPrinter.printClass(Annotated.class));
+
         assertTrue(ClassPrinter.printClass(Annotated.class).equals(expected));
     }
 
@@ -117,7 +117,7 @@ public class ClassPrinterTest {
      */
     @Test
     public void classTest() {
-        final String expected =
+        final String expectedBase =
                 "private static class TestClass extends Annotated implements TestInterface, ExtendedTestInterface {\n" +
                 "    @TestAnnotation(20)\n" +
                 "    private final static String STRING_CONSTANT = \"String constant\";\n" +
@@ -125,13 +125,20 @@ public class ClassPrinterTest {
                 "\n" +
                 "    @TestAnnotation(30)\n" +
                 "    public TestClass();\n" +
-                "\n" +
+                "\n";
+        final String firstPossible = expectedBase +
                 "    @TestAnnotation(40)\n" +
                 "    public void testMethod(int arg0);\n" +
                 "    public void additionalMethod(String arg0);\n" +
                 "}\n";
+        final String secondPossible = expectedBase +
+                "    public void additionalMethod(String arg0);\n" +
+                "    @TestAnnotation(40)\n" +
+                "    public void testMethod(int arg0);\n" +
+                "}\n";
 
-        assertTrue(ClassPrinter.printClass(TestClass.class).equals(expected));
+        String result = ClassPrinter.printClass(TestClass.class);
+        assertTrue(result.equals(firstPossible) || result.equals(secondPossible));
     }
 
     /** class with internal entity */

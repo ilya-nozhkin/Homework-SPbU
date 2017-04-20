@@ -37,12 +37,24 @@ public class ClassPrinter {
     }
 
     /**
+     * appends all strings to builder
+     *
+     * @param builder target
+     * @param strings source
+     */
+    private static void multipleAppend(StringBuilder builder, String... strings) {
+        for (String string : strings) {
+            builder.append(string);
+        }
+    }
+
+    /**
      * prints annotation in such format: @name(value)
      *
+     * @param builder output builder
      * @param annotation annotation object
-     * @return annotation that is printed to a string
      */
-    private static String printAnnotation(Annotation annotation) {
+    private static void printAnnotation(StringBuilder builder, Annotation annotation) {
         Class type = annotation.annotationType();
 
         String value = null;
@@ -52,11 +64,9 @@ public class ClassPrinter {
             valueMethod = type.getMethod("value");
             accessible = valueMethod.isAccessible();
             valueMethod.setAccessible(true);
-            if (valueMethod != null) {
-                Object valueObject = valueMethod.invoke(annotation);
-                if (valueObject != null) {
-                    value = valueObject.toString();
-                }
+            Object valueObject = valueMethod.invoke(annotation);
+            if (valueObject != null) {
+                value = valueObject.toString();
             }
             valueMethod.setAccessible(accessible);
         } catch (NoSuchMethodException e) {
@@ -65,29 +75,29 @@ public class ClassPrinter {
             valueMethod.setAccessible(accessible);
         }
 
-        return "@" + type.getSimpleName() + (value == null ? "" : "(" + value + ")");
+        multipleAppend(builder, "@", type.getSimpleName(), value == null ? "" : "(" + value + ")");
     }
 
     /**
      * prints all given annotation (each on a new line)
      *
+     * @param builder output builder
      * @param annotations annotation array
      * @param offset string that should be printed at the beginning of a line
-     * @return annotation array that is printed to a string
      */
-    private static String printAnnotations(Annotation[] annotations, String offset) {
-        String result = "";
+    private static void printAnnotations(StringBuilder builder, Annotation[] annotations, String offset) {
         for (Annotation annotation : annotations) {
-            result += offset + printAnnotation(annotation) + "\n";
+            builder.append(offset);
+            printAnnotation(builder, annotation);
+            builder.append("\n");
         }
-        return result;
     }
 
     /**
      * prints value of primitive (or string) static final field
      *
      * @param field field object
-     * @return value that is printed to a string
+     * @return string that contains value of a field
      */
     private static String printFieldValue(Field field) {
         if (!Modifier.isStatic(field.getModifiers()) || !Modifier.isFinal(field.getModifiers()) ||
@@ -98,288 +108,277 @@ public class ClassPrinter {
         boolean accessible = field.isAccessible();
         field.setAccessible(true);
 
+        String value = null;
         try {
             if (field.getType() == String.class) {
-                return '"' + field.get(null).toString() + '"';
+                value = '"' + field.get(null).toString() + '"';
+            } else {
+                value = field.get(null).toString();
             }
-            return field.get(null).toString();
         } catch (IllegalAccessException e) {}
 
         field.setAccessible(accessible);
 
-        return null;
+        return value;
     }
 
     /**
      * prints field in such format: modifiers type name = value;
      *
+     * @param builder output builder
      * @param field field object
      * @param offset string that should be printed at the beginning of a line
      * @param modifierPrinter class that prints modifiers
-     * @return field that is printed to a string
      */
-    private static String printField(Field field, String offset, ModifierPrinter modifierPrinter) {
-        String result = printAnnotations(field.getDeclaredAnnotations(), offset + TAB) +
-                offset + TAB +
-                modifierPrinter.printModifiers((field.getModifiers())) +
-                field.getType().getSimpleName() + " " +
-                field.getName();
+    private static void printField(StringBuilder builder, Field field, String offset, ModifierPrinter modifierPrinter) {
+        printAnnotations(builder, field.getDeclaredAnnotations(), offset + TAB);
+        multipleAppend(builder, offset, TAB, modifierPrinter.printModifiers((field.getModifiers())),
+                       field.getType().getSimpleName(), " ", field.getName());
 
         String value = printFieldValue(field);
         if (value != null) {
-            result += " = " + value;
+            multipleAppend(builder, " = ", value);
         }
-        return result;
     }
 
     /**
      * prints constructor in such format: modifiers name(arguments)
      *
+     * @param builder output builder
      * @param constructor constructor object
      * @param offset string that should be printed at the beginning of a line
      * @param modifierPrinter class that prints modifiers
-     * @return constructor that is printed to a string
      */
-    private static String printConstructor(Constructor constructor, String offset, ModifierPrinter modifierPrinter) {
-        String result = printAnnotations(constructor.getDeclaredAnnotations(), offset + TAB) +
-                offset + TAB +
-                modifierPrinter.printModifiers(constructor.getModifiers()) +
-                constructor.getDeclaringClass().getSimpleName() + "(";
+    private static void printConstructor(StringBuilder builder, Constructor constructor,
+                                         String offset, ModifierPrinter modifierPrinter) {
+        printAnnotations(builder, constructor.getDeclaredAnnotations(), offset + TAB);
+        multipleAppend(builder, offset, TAB, modifierPrinter.printModifiers(constructor.getModifiers()),
+                       constructor.getDeclaringClass().getSimpleName(), "(");
 
         Parameter[] parameters = constructor.getParameters();
         for (int i = 0; i < parameters.length; i++) {
-            result += parameters[i].getType().getSimpleName() + " " + parameters[i].getName();
+            multipleAppend(builder, parameters[i].getType().getSimpleName(), " ", parameters[i].getName());
             if (i < parameters.length - 1) {
-                result += ", ";
+                builder.append(", ");
             }
         }
 
-        result += ")";
+        builder.append(")");
 
         Class[] exceptions = constructor.getExceptionTypes();
         if (exceptions.length > 0) {
-            result += " throws ";
+            builder.append(" throws ");
             for (int i = 0; i < exceptions.length; i++) {
-                result += exceptions[i].getTypeName();
+                builder.append(exceptions[i].getTypeName());
                 if (i < exceptions.length - 1) {
-                    result += ", ";
+                    builder.append(", ");
                 }
             }
         }
-
-        return result;
     }
 
     /**
      * prints a method in such format: modifiers returnType name(arguments)
      *
+     * @param builder output builder
      * @param method method object
      * @param offset string that should be printed at the beginning of a line
      * @param modifierPrinter class that prints modifiers
-     * @return methods that is printed to a string
      */
-    private static String printMethod(Method method, String offset, ModifierPrinter modifierPrinter) {
-        String result = printAnnotations(method.getDeclaredAnnotations(), offset + TAB) +
-                offset + TAB +
-                modifierPrinter.printModifiers(method.getModifiers()) +
-                method.getReturnType().getSimpleName() + " " +
-                method.getName() + "(";
+    private static void printMethod(StringBuilder builder, Method method, String offset,
+                                      ModifierPrinter modifierPrinter) {
+        printAnnotations(builder, method.getDeclaredAnnotations(), offset + TAB);
+        multipleAppend(builder, offset, TAB, modifierPrinter.printModifiers(method.getModifiers()),
+                       method.getReturnType().getSimpleName(), " ", method.getName(), "(");
 
         Parameter[] parameters = method.getParameters();
         for (int i = 0; i < parameters.length; i++) {
-            result += parameters[i].getType().getSimpleName() + " " + parameters[i].getName();
+            multipleAppend(builder, parameters[i].getType().getSimpleName(), " ", parameters[i].getName());
             if (i < parameters.length - 1) {
-                result += ", ";
+                builder.append(", ");
             }
         }
 
-        result += ")";
+        builder.append(")");
 
         Class[] exceptions = method.getExceptionTypes();
         if (exceptions.length > 0) {
-            result += " throws ";
+            builder.append(" throws ");
             for (int i = 0; i < exceptions.length; i++) {
-                result += exceptions[i].getTypeName();
+                builder.append(exceptions[i].getTypeName());
                 if (i < exceptions.length - 1) {
-                    result += ", ";
+                    builder.append(", ");
                 }
             }
         }
-
-        return result;
     }
 
     /**
      * prints an array of interfaces
      *
+     * @param builder output builder
      * @param interfaces array of interfaces
-     * @return interfaces that are printed to a string
      */
-    private static String printInterfaces(Class[] interfaces) {
-        String result = "";
+    private static void printInterfaces(StringBuilder builder, Class[] interfaces) {
         for (int i = 0; i < interfaces.length; i++) {
-            result += interfaces[i].getSimpleName();
+            builder.append(interfaces[i].getSimpleName());
             if (i < interfaces.length - 1) {
-                result += ", ";
+                builder.append(", ");
             }
         }
-
-        return result;
     }
 
     /**
      * prints an array of field (each on a new array)
      *
+     * @param builder output builder
      * @param fields array of fields
      * @param offset string that should be printed at the beginning of a line
      * @param modifierPrinter class that prints modifiers
-     * @return fields that are printed to a string
      */
-    private static String printFields(Field[] fields, String offset, ModifierPrinter modifierPrinter) {
-        String result = "";
+    private static void printFields(StringBuilder builder, Field[] fields,
+                                    String offset, ModifierPrinter modifierPrinter) {
         for (Field field : fields) {
-            result += printField(field, offset, modifierPrinter) + ";\n";
+            printField(builder, field, offset, modifierPrinter);
+            builder.append(";\n");
         }
-        return result;
     }
 
     /**
      * prints an array of constructors (each on a new line)
      *
+     * @param builder output builder
      * @param constructors array of constructor
      * @param offset string that should be printed at the beginning of a line
      * @param modifierPrinter class that prints modifiers
-     * @return constructors that are printed to a string
      */
-    private static String printConstructors(Constructor[] constructors, String offset, ModifierPrinter modifierPrinter) {
-        String result = "";
+    private static void printConstructors(StringBuilder builder, Constructor[] constructors,
+                                          String offset, ModifierPrinter modifierPrinter) {
         if (constructors.length > 0) {
-            result += '\n';
+            builder.append('\n');
         }
         for (Constructor constructor : constructors) {
-            result += printConstructor(constructor, offset, modifierPrinter) + ";\n";
+            printConstructor(builder, constructor, offset, modifierPrinter);
+            builder.append(";\n");
         }
-        return result;
     }
 
     /**
      * prints an array of methods (each on a new line)
      *
+     * @param builder output builder
      * @param methods array of methods
      * @param offset string that should be printed at the beginning of a line
      * @param modifierPrinter class that prints modifiers
-     * @return methods that are printed to a string
      */
-    private static String printMethods(Method[] methods, String offset, ModifierPrinter modifierPrinter) {
-        String result = "";
+    private static void printMethods(StringBuilder builder, Method[] methods,
+                                     String offset, ModifierPrinter modifierPrinter) {
         if (methods.length > 0) {
-            result += '\n';
+            builder.append('\n');
         }
         for (Method method : methods) {
-            result += printMethod(method, offset, modifierPrinter) + ";\n";
+            printMethod(builder, method, offset, modifierPrinter);
+            builder.append(";\n");
         }
-        return result;
     }
 
     /**
      * prints internal declared entities
      *
+     * @param builder output builder
      * @param internals array of internal declared classes
      * @param offset string that should be printed at the beginning of a line
-     * @return internals that are printed to a string
      */
-    private static String printInternals(Class[] internals, String offset) {
-        String result = "";
+    private static void printInternals(StringBuilder builder, Class[] internals, String offset) {
         if (internals.length > 0) {
-            result += "\n";
+            builder.append("\n");
         }
         for (int i = 0; i < internals.length; i++) {
-            result += printEntity(internals[i], offset + TAB);
+            printEntity(builder, internals[i], offset + TAB);
             if (i < internals.length - 1) {
-                result += "\n";
+                builder.append("\n");
             }
         }
-        return result;
     }
 
     /**
      * prints a class
      *
+     * @param builder output builder
      * @param entity class object of a class
      * @param offset string that should be printed at the beginning of a line
-     * @return class that is printed to a string
      */
-    private static String printClass(Class entity, String offset) {
-        String result = printAnnotations(entity.getDeclaredAnnotations(), offset);
-        result += offset + DEFAULT_MODIFIER_PRINTER.printModifiers(entity.getModifiers()) +
-                "class " + entity.getSimpleName() + " ";
+    private static void printClass(StringBuilder builder, Class entity, String offset) {
+        printAnnotations(builder, entity.getDeclaredAnnotations(), offset);
+        multipleAppend(builder, offset, DEFAULT_MODIFIER_PRINTER.printModifiers(entity.getModifiers()),
+                       "class", " ", entity.getSimpleName(), " ");
 
         if (entity.getSuperclass() != Object.class) {
-            result += "extends " + entity.getSuperclass().getSimpleName() + " ";
+            multipleAppend(builder, "extends ", entity.getSuperclass().getSimpleName(), " ");
         }
 
         Class[] interfaces = entity.getInterfaces();
         if (interfaces.length > 0) {
-            result += "implements " + printInterfaces(entity.getInterfaces()) + " ";
+            builder.append("implements ");
+            printInterfaces(builder, entity.getInterfaces());
+            builder.append(" ");
         }
 
-        result += "{\n";
+        builder.append("{\n");
 
-        result += printFields(entity.getDeclaredFields(), offset, CLASS_MODIFIER_PRINTER);
-        result += printConstructors(entity.getDeclaredConstructors(), offset, CLASS_MODIFIER_PRINTER);
-        result += printMethods(entity.getDeclaredMethods(), offset, CLASS_MODIFIER_PRINTER);
-        result += printInternals(entity.getDeclaredClasses(), offset);
+        printFields(builder, entity.getDeclaredFields(), offset, CLASS_MODIFIER_PRINTER);
+        printConstructors(builder, entity.getDeclaredConstructors(), offset, CLASS_MODIFIER_PRINTER);
+        printMethods(builder, entity.getDeclaredMethods(), offset, CLASS_MODIFIER_PRINTER);
+        printInternals(builder, entity.getDeclaredClasses(), offset);
 
-        result += offset + "}" + "\n";
-
-        return result;
+        multipleAppend(builder, offset, "}", "\n");
     }
 
     /**
      * prints an interface
      *
+     * @param builder output builder
      * @param entity class object of an interface
      * @param offset string that should be printed at the beginning of a line
-     * @return interface that is printed to a string
      */
-    private static String printInterface(Class entity, String offset) {
-        String result = printAnnotations(entity.getDeclaredAnnotations(), offset);
-        result += offset + SPECIAL_CLASS_DECLARATION_MODIFIER_PRINTER.printModifiers(entity.getModifiers()) +
-                "interface " + entity.getSimpleName() + " ";
+    private static void printInterface(StringBuilder builder, Class entity, String offset) {
+        printAnnotations(builder, entity.getDeclaredAnnotations(), offset);
+        multipleAppend(builder, offset,
+                       SPECIAL_CLASS_DECLARATION_MODIFIER_PRINTER.printModifiers(entity.getModifiers()),
+                       "interface ", entity.getSimpleName(), " ");
 
         Class[] interfaces = entity.getInterfaces();
         if (interfaces.length > 0) {
-            result += "extends " + printInterfaces(entity.getInterfaces()) + " ";
+            builder.append("extends ");
+            printInterfaces(builder, entity.getInterfaces());
+            builder.append(" ");
         }
 
-        result += "{\n";
+        builder.append("{\n");
 
-        result += printMethods(entity.getDeclaredMethods(), offset, INTERFACE_MODIFIER_PRINTER);
-        result += printInternals(entity.getDeclaredClasses(), offset);
+        printMethods(builder, entity.getDeclaredMethods(), offset, INTERFACE_MODIFIER_PRINTER);
+        printInternals(builder, entity.getDeclaredClasses(), offset);
 
-        result += offset + "}" + "\n";
-
-        return result;
+        multipleAppend(builder, offset, "}", "\n");
     }
 
     /**
      * prints an annotation
      *
+     * @param builder output builder
      * @param entity class obect of an annotation
      * @param offset string that should be printed at the beginning of a line
-     * @return annotation that is printed to a string
      */
-    private static String printAnnotationClass(Class entity, String offset) {
-        String result = printAnnotations(entity.getDeclaredAnnotations(), offset);
-        result += offset + SPECIAL_CLASS_DECLARATION_MODIFIER_PRINTER.printModifiers(entity.getModifiers()) +
-                "@interface " + entity.getSimpleName() + " {\n";
+    private static void printAnnotationClass(StringBuilder builder, Class entity, String offset) {
+        printAnnotations(builder, entity.getDeclaredAnnotations(), offset);
+        multipleAppend(builder, offset,
+                       SPECIAL_CLASS_DECLARATION_MODIFIER_PRINTER.printModifiers(entity.getModifiers()),
+                       "@interface ", entity.getSimpleName(), " {\n");
 
-        result += printMethods(entity.getDeclaredMethods(), offset, INTERFACE_MODIFIER_PRINTER);
-        result += printInternals(entity.getDeclaredClasses(), offset);
+        printMethods(builder, entity.getDeclaredMethods(), offset, INTERFACE_MODIFIER_PRINTER);
+        printInternals(builder, entity.getDeclaredClasses(), offset);
 
-        result += offset + "}" + "\n";
-
-        return result;
+        multipleAppend(builder, offset, "}", "\n");
     }
 
     /**
@@ -406,40 +405,41 @@ public class ClassPrinter {
     /**
      * prints values of an enum
      *
+     * @param builder output builder
      * @param values array of enum values
      * @param offset string that should be printed at the beginning of a line
-     * @return values that are printed to a string
      */
-    private static String printEnumValues(Field[] values, String offset) {
-        String result = "";
+    private static void printEnumValues(StringBuilder builder, Field[] values, String offset) {
         for (int i = 0; i < values.length; i++) {
-            result += offset + TAB + values[i].getName() + (i == values.length - 1 ? ";" : ",") + "\n";
+            multipleAppend(builder, offset, TAB, values[i].getName(), i == values.length - 1 ? ";" : ",", "\n");
         }
-        return result;
     }
 
     /**
      * prints an enum
      *
+     * @param builder output builder
      * @param entity class object of enum
      * @param offset string that should be printed at the beginning of a line
-     * @return enum that is printed to a string
      */
-    private static String printEnum(Class entity, String offset) {
-        String result = printAnnotations(entity.getDeclaredAnnotations(), offset);
-        result += offset + SPECIAL_CLASS_DECLARATION_MODIFIER_PRINTER.printModifiers(entity.getModifiers()) +
-                "enum " + entity.getSimpleName() + " ";
+    private static void printEnum(StringBuilder builder, Class entity, String offset) {
+        printAnnotations(builder, entity.getDeclaredAnnotations(), offset);
+        multipleAppend(builder, offset,
+                       SPECIAL_CLASS_DECLARATION_MODIFIER_PRINTER.printModifiers(entity.getModifiers()),
+                       "enum ", entity.getSimpleName(), " ");
 
         if (entity.getSuperclass() != Enum.class) {
-            result += "extends " + entity.getSuperclass().getSimpleName() + " ";
+            multipleAppend(builder, "extends ", entity.getSuperclass().getSimpleName(), " ");
         }
 
         Class[] interfaces = entity.getInterfaces();
         if (interfaces.length > 0) {
-            result += "implements " + printInterfaces(entity.getInterfaces()) + " ";
+            builder.append("implements ");
+            printInterfaces(builder, entity.getInterfaces());
+            builder.append(" ");
         }
 
-        result += "{\n";
+        builder.append("{\n");
 
         Field[] fields = getEnumValues(entity);
         try {
@@ -450,47 +450,45 @@ public class ClassPrinter {
         Field[] enumValues = getEnumValues(entity);
         fields = arrayWithout(fields, enumValues).toArray(new Field[0]);
 
-        result += printEnumValues(enumValues, offset);
-        result += printFields(fields, offset, CLASS_MODIFIER_PRINTER);
+        printEnumValues(builder, enumValues, offset);
+        printFields(builder, fields, offset, CLASS_MODIFIER_PRINTER);
 
         Constructor[] constructors = entity.getDeclaredConstructors();
         try {
             constructors = arrayWithout(constructors, entity.getDeclaredConstructor(String.class, int.class))
                                        .toArray(new Constructor[0]);
         } catch (NoSuchMethodException e) {}
-        result += printConstructors(constructors, offset, CLASS_MODIFIER_PRINTER);
+        printConstructors(builder, constructors, offset, CLASS_MODIFIER_PRINTER);
 
         Method[] methods = entity.getDeclaredMethods();
         try {
             methods = arrayWithout(methods, entity.getDeclaredMethod("values"),
                                             entity.getDeclaredMethod("valueOf", String.class)).toArray(new Method[0]);
         } catch (NoSuchMethodException e) {}
-        result += printMethods(methods, offset, CLASS_MODIFIER_PRINTER);
+        printMethods(builder, methods, offset, CLASS_MODIFIER_PRINTER);
 
-        result += printInternals(entity.getDeclaredClasses(), offset);
+        printInternals(builder, entity.getDeclaredClasses(), offset);
 
-        result += offset + "}" + "\n";
-
-        return result;
+        multipleAppend(builder, offset, "}", "\n");
     }
 
     /**
      * prints all possible entities (classes, interfaces, annotations, enums)
      *
+     * @param builder output builder
      * @param entity class object of entity
      * @param offset string that should be printed at the beginning of a line
-     * @return entity that is printed to a string
      */
-    private static String printEntity(Class entity, String offset) {
+    private static void printEntity(StringBuilder builder, Class entity, String offset) {
         if (entity.isAnnotation()) {
-            return printAnnotationClass(entity, offset);
+            printAnnotationClass(builder, entity, offset);
         } else if (entity.isInterface()) {
-            return printInterface(entity, offset);
+            printInterface(builder, entity, offset);
         } else if (entity.isEnum()) {
-            return printEnum(entity, offset);
+            printEnum(builder, entity, offset);
+        } else {
+            printClass(builder, entity, offset);
         }
-
-        return printClass(entity, offset);
     }
 
     /**
@@ -500,7 +498,9 @@ public class ClassPrinter {
      * @return class that is printed to a string
      */
     public static String printClass(Class data) {
-        return printEntity(data, "");
+        StringBuilder builder = new StringBuilder();
+        printEntity(builder, data, "");
+        return builder.toString();
     }
 
     /** class that prints modifiers */
@@ -521,45 +521,45 @@ public class ClassPrinter {
          * @return string that contains printed modifiers
          */
         protected String printModifiers(int modifiers, ArrayList<String> hidden) {
-            String result = "";
+            StringBuilder builder = new StringBuilder();
 
             if (Modifier.isPublic(modifiers) && !hidden.contains("public")) {
-                result += "public ";
+                builder.append("public ");
             }
 
             if (Modifier.isPrivate(modifiers) && !hidden.contains("private")) {
-                result += "private ";
+                builder.append("private ");
             }
 
             if (Modifier.isProtected(modifiers) && !hidden.contains("protected")) {
-                result += "protected ";
+                builder.append("protected ");
             }
 
             if (Modifier.isAbstract(modifiers) && !hidden.contains("abstract")) {
-                result += "abstract ";
+                builder.append("abstract ");
             }
 
             if (Modifier.isFinal(modifiers) && !hidden.contains("final")) {
-                result += "final ";
+                builder.append("final ");
             }
 
             if (Modifier.isNative(modifiers) && !hidden.contains("native")) {
-                result += "native ";
+                builder.append("native ");
             }
 
             if (Modifier.isStatic(modifiers) && !hidden.contains("static")) {
-                result += "static ";
+                builder.append("static ");
             }
 
             if (Modifier.isTransient(modifiers) && !hidden.contains("transient")) {
-                result += "transient ";
+                builder.append("transient ");
             }
 
             if (Modifier.isVolatile(modifiers) && !hidden.contains("volatile")) {
-                result += "volatile ";
+                builder.append("volatile ");
             }
 
-            return result;
+            return builder.toString();
         }
     }
 
