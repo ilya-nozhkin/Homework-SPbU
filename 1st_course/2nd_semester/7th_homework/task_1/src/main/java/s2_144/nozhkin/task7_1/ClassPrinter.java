@@ -1,11 +1,11 @@
-import sun.reflect.annotation.AnnotationType;
+package s2_144.nozhkin.task7_1;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
 import java.util.*;
 
 /** class that can print other classes/annotations/interfaces/enums */
-class ClassPrinter {
+public class ClassPrinter {
     /** level offset */
     private static final String TAB = "    ";
 
@@ -46,17 +46,23 @@ class ClassPrinter {
         Class type = annotation.annotationType();
 
         String value = null;
+        boolean accessible = false;
+        Method valueMethod = null;
         try {
-            Method valueMethod = type.getMethod("value");
+            valueMethod = type.getMethod("value");
+            accessible = valueMethod.isAccessible();
+            valueMethod.setAccessible(true);
             if (valueMethod != null) {
                 Object valueObject = valueMethod.invoke(annotation);
                 if (valueObject != null) {
                     value = valueObject.toString();
                 }
             }
+            valueMethod.setAccessible(accessible);
         } catch (NoSuchMethodException e) {
         } catch (IllegalAccessException e) {
         } catch (InvocationTargetException e) {
+            valueMethod.setAccessible(accessible);
         }
 
         return "@" + type.getSimpleName() + (value == null ? "" : "(" + value + ")");

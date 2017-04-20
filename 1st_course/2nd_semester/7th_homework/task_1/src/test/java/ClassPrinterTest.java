@@ -1,5 +1,5 @@
 import org.junit.Test;
-import sun.reflect.annotation.AnnotationType;
+import s2_144.nozhkin.task7_1.ClassPrinter;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -73,7 +73,7 @@ public class ClassPrinterTest {
                 "private static class Annotated {\n\n" +
                 "    public Annotated();\n" +
                 "}\n";
-
+        System.out.println(ClassPrinter.printClass(Annotated.class));
         assertTrue(ClassPrinter.printClass(Annotated.class).equals(expected));
     }
 
