@@ -74,6 +74,8 @@ public class ClassPrinterTest {
                 "    public Annotated();\n" +
                 "}\n";
 
+        System.out.println(ClassPrinter.printClass(Annotated.class));
+
         assertTrue(ClassPrinter.printClass(Annotated.class).equals(expected));
     }
 

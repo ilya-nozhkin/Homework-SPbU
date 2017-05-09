@@ -57,25 +57,41 @@ public class ClassPrinter {
     private static void printAnnotation(StringBuilder builder, Annotation annotation) {
         Class type = annotation.annotationType();
 
-        String value = null;
-        boolean accessible = false;
-        Method valueMethod = null;
-        try {
-            valueMethod = type.getMethod("value");
-            accessible = valueMethod.isAccessible();
-            valueMethod.setAccessible(true);
-            Object valueObject = valueMethod.invoke(annotation);
-            if (valueObject != null) {
-                value = valueObject.toString();
-            }
-            valueMethod.setAccessible(accessible);
-        } catch (NoSuchMethodException e) {
-        } catch (IllegalAccessException e) {
-        } catch (InvocationTargetException e) {
-            valueMethod.setAccessible(accessible);
-        }
+        multipleAppend(builder, "@", type.getSimpleName());
 
-        multipleAppend(builder, "@", type.getSimpleName(), value == null ? "" : "(" + value + ")");
+        Method[] methods = annotation.annotationType().getDeclaredMethods();
+        if (methods.length > 0) {
+            builder.append("(");
+
+            for (int i = 0; i < methods.length; i++) {
+                String value = null;
+                boolean accessible = false;
+                Method method = methods[i];
+                try {
+                    accessible = method.isAccessible();
+                    method.setAccessible(true);
+                    Object valueObject = method.invoke(annotation);
+                    if (valueObject != null) {
+                        value = valueObject.toString();
+                    }
+                    method.setAccessible(accessible);
+                } catch (IllegalAccessException e) {
+                } catch (InvocationTargetException e) {
+                    method.setAccessible(accessible);
+                } catch (IllegalArgumentException e) {
+                    method.setAccessible(accessible);
+                }
+
+                if (value != null) {
+                    builder.append(value);
+                }
+                if (i < methods.length - 1) {
+                    builder.append(", ");
+                }
+            }
+
+            builder.append(")");
+        }
     }
 
     /**
