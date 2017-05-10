@@ -64,20 +64,17 @@ public final class FirstPartTasks {
         return albums
                 .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()))
                 .values().stream()
-                .reduce(new Long(0), (previous, current) -> previous += current - 1);
+                .reduce(0L, (previous, current) -> previous += current - 1);
     }
 
     // Альбом, в котором максимум рейтинга минимален
     // (если в альбоме нет ни одного трека, считать, что максимум рейтинга в нем --- 0)
     public static Optional<Album> minMaxRating(Stream<Album> albums) {
-        Pair<Album, Integer> first = new Pair<>(null, 0);
         return Optional.ofNullable(albums
                 .map(album -> new Pair<>(album,
                         album.getTracks().stream().mapToInt(Track::getRating).max().orElse(0)))
-                .reduce(first, (previous, current) -> previous =
-                        previous.getKey() == null || current.getValue() < previous.getValue() ?
-                                current : previous)
-                .getKey());
+                .min(Comparator.comparing(Pair::getValue))
+                .orElse(new Pair<>(null, null)).getKey());
     }
 
     // Список альбомов, отсортированный по убыванию среднего рейтинга его треков (0, если треков нет)
@@ -89,7 +86,7 @@ public final class FirstPartTasks {
                                          .average()
                                          .orElse(0)))
                 .sorted((left, right) -> -left.getValue().compareTo(right.getValue()))
-                .map(pair -> pair.getKey())
+                .map(Pair::getKey)
                 .collect(Collectors.toList());
     }
 
