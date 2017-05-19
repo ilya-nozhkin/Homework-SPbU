@@ -48,8 +48,9 @@ public class TicTacToeTest extends Application {
     public void markOrderTest() {
         boolean turn = true;
         for (int i = 0; i < 9; i++) {
-            cells.get(i).fire();
-            assertTrue(cells.get(i).getText().equals(turn ? "X" : "O"));
+            int id = (i + 4) % 9;
+            cells.get(id).fire();
+            assertTrue(cells.get(id).getText().equals(turn ? "X" : "O"));
             turn = !turn;
         }
     }
