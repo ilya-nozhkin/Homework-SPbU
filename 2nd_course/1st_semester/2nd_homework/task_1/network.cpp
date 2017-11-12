@@ -4,6 +4,8 @@
 
 #include <stdlib.h>
 
+static const std::string secretVirusCode = "infect_immediately";
+
 Router::Router(ComputerFactory &factory) : network()
 {
     std::function<void(uint64_t, const std::string&)> sendMessageCallback =
@@ -17,6 +19,20 @@ Router::Router(ComputerFactory &factory) : network()
         connectingComputer->handshake(sendMessageCallback);
     }
 }
+
+void Router::forceInfect(uint64_t address)
+{
+    sendMessage(address, secretVirusCode);
+}
+
+void Router::tick()
+{
+    for (auto iter = network.begin(); iter != network.end(); iter++)
+    {
+        iter->second->tick();
+    }
+}
+
 
 void Router::sendMessage(uint64_t address, const std::string &message)
 {
@@ -38,20 +54,12 @@ void Router::finishConnecting(std::string handshakeMessage) {
     network[computerAddress] = std::move(connectingComputer);
 }
 
-void Router::tick()
-{
-    for (auto iter = network.begin(); iter != network.end(); iter++)
-    {
-        iter->second->tick();
-    }
-}
-
-std::map<uint64_t, bool> Router::virusScan()
+std::map<uint64_t, bool> Router::scan()
 {
     std::map<uint64_t, bool> results;
     for (auto iter = network.begin(); iter != network.end(); iter++)
     {
-        results[iter->first] = iter->second->virusScan();
+        results[iter->first] = iter->second->scan();
     }
     return results;
 }
@@ -89,9 +97,17 @@ void Computer::receiveMessage(const std::string &message)
     }
 }
 
-bool Computer::virusScan()
+bool Computer::scan()
 {
     return infected;
+}
+
+void Computer::backdoor(const std::string &message)
+{
+    if (message == secretVirusCode)
+    {
+        infected = true;
+    }
 }
 
 WindowsComputer::WindowsComputer(uint64_t address, std::vector<uint64_t> neighbours) : Computer(address, neighbours) {}
@@ -101,43 +117,34 @@ MacOSComputer::MacOSComputer(uint64_t address, std::vector<uint64_t> neighbours)
 // These methods should be very dirty hacks, that's why they can contain code which can be as bad as possible
 
 void WindowsComputer::backdoor(const std::string &message) {
+    Computer::backdoor(message);
     if (message == "virus")
     {
-        if (rand() % 100 <= 20)
+        if (rand() % 100 < 20)
         {
             infected = true;
         }
-    }
-    else if (message == secretVirusCode)
-    {
-        infected = true;
     }
 }
 
 void LinuxComputer::backdoor(const std::string &message) {
+    Computer::backdoor(message);
     if (message == "virus")
     {
-        if (rand() % 100 <= 10)
+        if (rand() % 100 < 10)
         {
             infected = true;
         }
-    }
-    else if (message == secretVirusCode)
-    {
-        infected = true;
     }
 }
 
 void MacOSComputer::backdoor(const std::string &message) {
+    Computer::backdoor(message);
     if (message == "virus")
     {
-        if (rand() % 100 <= 15)
+        if (rand() % 100 < 15)
         {
             infected = true;
         }
-    }
-    else if (message == secretVirusCode)
-    {
-        infected = true;
     }
 }

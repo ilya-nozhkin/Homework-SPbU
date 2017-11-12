@@ -3,6 +3,7 @@
 #include <chrono>
 
 #include <stdlib.h>
+#include <math.h>
 
 #include "network.h"
 
@@ -63,7 +64,7 @@ private:
 
 void printSnapshot(Router &router)
 {
-    auto snapshot = router.virusScan();
+    auto snapshot = router.scan();
     for (auto pair : snapshot)
     {
         std::cout << pair.first << " - " << (pair.second ? "infected" : "not infected") << std::endl;
@@ -72,7 +73,7 @@ void printSnapshot(Router &router)
 
 bool checkIfAllInfected(Router &router)
 {
-    auto snapshot = router.virusScan();
+    auto snapshot = router.scan();
     for (auto pair : snapshot)
     {
         if (!pair.second)
@@ -89,12 +90,13 @@ bool testThatThereIsNoSpontaneousVirusGeneration()
     FileComputerFactory factory("test.txt");
     Router router(factory);
 
-    for (int i = 0; i < 500; i++)
+    const int ticks = 500;
+    for (int i = 0; i < ticks; i++)
     {
         router.tick();
     }
 
-    auto snapshot = router.virusScan();
+    auto snapshot = router.scan();
     for (auto pair : snapshot)
     {
         if (pair.second)
@@ -114,16 +116,17 @@ bool testInfectionOrder()
     const int chain[] = {1, 4, 6, 9};
     const int chainLength = 4;
 
-    router.sendMessage(chain[0], secretVirusCode);
-    if (!router.virusScan()[chain[0]])
+    router.forceInfect(chain[0]);
+    if (!router.scan()[chain[0]])
     {
         return false;
     }
 
-    for (int i = 0; i < 100; i++)
+    const int ticks = 100;
+    for (int i = 0; i < ticks; i++)
     {
         router.tick();
-        auto snapshot = router.virusScan();
+        auto snapshot = router.scan();
 
         bool infected = snapshot[chain[0]];
         for (int i = 1; i < chainLength; i++)
@@ -151,16 +154,17 @@ bool testThatThereIsNoBackpropagation()
     const int chain[] = {1, 4, 6, 9, 10};
     const int chainLength = 5;
 
-    router.sendMessage(chain[chainLength - 1], secretVirusCode);
-    if (!router.virusScan()[chain[chainLength - 1]])
+    router.forceInfect(chain[chainLength - 1]);
+    if (!router.scan()[chain[chainLength - 1]])
     {
         return false;
     }
 
-    for (int i = 0; i < 100; i++)
+    const int ticks = 100;
+    for (int i = 0; i < ticks; i++)
     {
         router.tick();
-        auto snapshot = router.virusScan();
+        auto snapshot = router.scan();
         for (int j = 0; j < chainLength - 1; j++)
         {
             if (snapshot[chain[j]])
@@ -173,42 +177,104 @@ bool testThatThereIsNoBackpropagation()
     return true;
 }
 
-int main()
+bool testForVulnerabilities()
 {
-    srand(std::chrono::system_clock::to_time_t(std::chrono::system_clock::now()));
+    const uint64_t windowsAddress = 4;
+    const uint64_t linuxAddress = 2;
+    const uint64_t macosAddress = 3;
+    const uint64_t zeroPatient = 1;
+    const int attempts = 4000;
 
+    int windowsInfectionCounter = 0;
+    int linuxInfectionCounter = 0;
+    int macosInfectionCounter = 0;
+
+    for (int i = 0; i < attempts; i++)
+    {
+        FileComputerFactory factory("test.txt");
+        Router router(factory);
+
+        router.forceInfect(zeroPatient);
+        router.tick();
+
+        auto snapshot = router.scan();
+
+        windowsInfectionCounter += snapshot[windowsAddress] ? 1 : 0;
+        linuxInfectionCounter += snapshot[linuxAddress] ? 1 : 0;
+        macosInfectionCounter += snapshot[macosAddress] ? 1 : 0;
+    }
+
+    double windowsInfectionChance = (double) windowsInfectionCounter / attempts;
+    double linuxInfectionChance = (double) linuxInfectionCounter / attempts;
+    double macosInfectionChance = (double) macosInfectionCounter / attempts;
+
+    const double expectedWindowsInfectionChance = 0.2;
+    const double expectedLinuxInfectionChance = 0.1;
+    const double expectedMacosInfectionChance = 0.15;
+    const double epsilon = 0.01;
+
+    return fabs(windowsInfectionChance - expectedWindowsInfectionChance) < epsilon &&
+           fabs(linuxInfectionChance - expectedLinuxInfectionChance) < epsilon &&
+           fabs(macosInfectionChance - expectedMacosInfectionChance) < epsilon;
+}
+
+bool testSuite()
+{
     if (!testInfectionOrder())
     {
         std::cout << "Infection order test failed" << std::endl;
+        return false;
     }
 
     if (!testThatThereIsNoSpontaneousVirusGeneration())
     {
         std::cout << "Spontaneous virus generation test failed" << std::endl;
+        return false;
     }
 
     if (!testThatThereIsNoBackpropagation())
     {
         std::cout << "Backpropagation test failed" << std::endl;
+        return false;
     }
 
-    FileComputerFactory factory("example.txt");
-    Router router(factory);
-
-    router.sendMessage(1, secretVirusCode);
-
-    bool process = true;
-    int step = 0;
-    while (process)
+    if (!testForVulnerabilities())
     {
-        router.tick();
+        std::cout << "Vulnerability test failed" << std::endl;
+        return false;
+    }
 
-        std::cout << "step: " << step << std::endl;
+    return true;
+}
+
+int main()
+{
+    srand(std::chrono::system_clock::to_time_t(std::chrono::system_clock::now()));
+
+    if (testSuite())
+    {
+        FileComputerFactory factory("example.txt");
+        Router router(factory);
+
+        const int zeroPatient = 1;
+        router.forceInfect(zeroPatient);
+
+        std::cout << "initial state: " << std::endl;
         printSnapshot(router);
 
-        process = !checkIfAllInfected(router);
+        bool process = true;
+        int step = 0;
+        while (process)
+        {
+            router.tick();
 
-        step++;
+            std::cout << "step: " << step << std::endl;
+            printSnapshot(router);
+
+            process = !checkIfAllInfected(router);
+
+            step++;
+        }
     }
 
     return 0;

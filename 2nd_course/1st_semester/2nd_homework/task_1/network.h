@@ -8,8 +8,6 @@
 
 #include <inttypes.h>
 
-static const std::string secretVirusCode = "infect_immediately";
-
 class Computer
 {
 public:
@@ -20,14 +18,14 @@ public:
     void receiveMessage(const std::string &message);
     void tick();
 
-    bool virusScan();
+    bool scan();
 private:
     std::function<void(uint64_t, std::string)> sendMessage;
     std::vector<uint64_t> neighbours;
     uint64_t address;
 protected:
     bool infected;
-    virtual void backdoor(const std::string &message) = 0;
+    virtual void backdoor(const std::string &message);
 };
 
 class ComputerFactory
@@ -42,15 +40,16 @@ class Router
 public:
     Router(ComputerFactory &factory);
 
-    void sendMessage(uint64_t address, const std::string &message);
+    void forceInfect(uint64_t address);
     void tick();
 
-    std::map<uint64_t, bool> virusScan();
+    std::map<uint64_t, bool> scan();
 private:
     std::map<uint64_t, std::unique_ptr<Computer>> network;
     std::unique_ptr<Computer> connectingComputer;
 
     void finishConnecting(std::string handshakeMessage);
+    void sendMessage(uint64_t address, const std::string &message);
 };
 
 
