@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="utf-8" />
+    <title>Tanks game</title>
+    <style>
+    	#gameCanvas 
+        {
+            background: #eee; 
+            display: block; 
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+
+<canvas id="gameCanvas"></canvas>
+Type (ip):(port) of server and press button<br>
+<input type="text" id="addressText" value="127.0.0.1:25535">
+<button type="button" id="connectButton">connect</button>
+<output id="statusText">status: ?</output>
+
+<script type="text/javascript" src="javascript/networking.js"></script>
+<script type="text/javascript" src="javascript/input.js"></script>
+<script type="text/javascript" src="javascript/map.js"></script>
+<script type="text/javascript" src="javascript/bullet.js"></script>
+<script type="text/javascript" src="javascript/player.js"></script>
+<script type="text/javascript" src="javascript/game.js"></script>
+<script type="text/javascript" src="javascript/main.js"></script>
+</body>
+</html>
