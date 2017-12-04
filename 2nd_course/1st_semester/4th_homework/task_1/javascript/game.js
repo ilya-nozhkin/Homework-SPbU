@@ -115,6 +115,13 @@ class Game {
         this.sendNetworkMessage(message);
     }
 
+    processNetworking() {
+        if (this.network) {
+            this.processNetworkMessages();
+            this.sendNetworkMessages();
+        }
+    }
+
     collide(circle1, circle2) {
         var dx = circle1[0] - circle2[0];
         var dy = circle1[1] - circle2[1];
@@ -143,11 +150,6 @@ class Game {
     }
 
     tick(keyboardInput, timeDelta) {
-        if (this.network) {
-            this.processNetworkMessages();
-            this.sendNetworkMessages();
-        }
-
         if (this.computeTurn()) {
             this.localPlayer.tick(keyboardInput, timeDelta);
 

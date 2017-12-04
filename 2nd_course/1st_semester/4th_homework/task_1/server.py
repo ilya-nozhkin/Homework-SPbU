@@ -1,19 +1,22 @@
 from http.server import HTTPServer, BaseHTTPRequestHandler
 import sys
 import socketserver
+import os.path
 
 firstPlayerInfo = None
 firstPlayerSubscribe = None
-
 
 class TanksHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         if self.path == "/isAnyoneHere":
             self.isAnyoneHere()
-        if self.path == "/subscribe":
+        elif self.path == "/subscribe":
             self.subscribe()
-        if self.path == "/getOffer":
+        elif self.path == "/getOffer":
             self.getOffer()
+        else:
+            self.sendFile()
+
 
     def do_POST(self):
         if self.path == "/offer":
@@ -32,6 +35,26 @@ class TanksHandler(BaseHTTPRequestHandler):
         answer = b"yes" if firstPlayerInfo is not None else b"no"
         
         self.wfile.write(answer)
+
+    def sendFile(self):
+        path = "." + self.path
+
+        if path == "./":
+            path = "./index.html"
+
+        if os.path.isfile(path):
+            mfile = open(path, "rb")
+            data = mfile.read()
+            mfile.close()
+
+            self.send_response(200)
+            self.send_header('Content-type', 'text/html')
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.end_headers()
+            self.wfile.write(data)
+        else:
+            self.send_response(404)
+
     
     def offer(self):
         global firstPlayerInfo
@@ -96,5 +119,5 @@ class TanksHandler(BaseHTTPRequestHandler):
 class ThreadedServer(socketserver.ThreadingMixIn, HTTPServer):
     pass;
 
-server = ThreadedServer(('', 25535), TanksHandler)
+server = ThreadedServer(('', 8080), TanksHandler)
 server.serve_forever()

@@ -14,14 +14,13 @@ class Network {
         this.messageQueue = []
     }
 
-    connect(serverAddress) {
-        this.serverAddress = serverAddress;
+    connect() {
         this.statusChanged(NetworkStatus.connectingToServer);
         
         var thisptr = this;
         var request = new XMLHttpRequest();
 
-        request.open("GET", "http://" + serverAddress + "/isAnyoneHere", true);
+        request.open("GET", "/isAnyoneHere", true);
         request.addEventListener("load", 
             () => thisptr.getPeerLookupResponse(request.status, request.responseText));
         request.addEventListener("error",
@@ -42,9 +41,9 @@ class Network {
             var messageReceivedCallback = message => thisptr.messageReceived(message);
 
             if (text == "no") {
-                this.peer = new Initiator(this.serverAddress, this.statusChanged, messageReceivedCallback);
+                this.peer = new Initiator(this.statusChanged, messageReceivedCallback);
             } else if (text == "yes") {
-                this.peer = new Follower(this.serverAddress, this.statusChanged, messageReceivedCallback);
+                this.peer = new Follower(this.statusChanged, messageReceivedCallback);
             }
 
             this.peer.connect();
@@ -69,8 +68,7 @@ class Network {
 }
 
 class Peer {
-    constructor(serverAddress, statusChangedCallback, messageReceivedCallback) {
-        this.serverAddress = serverAddress;
+    constructor(statusChangedCallback, messageReceivedCallback) {
         this.statusChanged = statusChangedCallback;
         this.messageReceived = messageReceivedCallback;
         this.ready = false;
@@ -130,8 +128,8 @@ class Peer {
 }
 
 class Initiator extends Peer {
-    constructor(serverAddress, statusChangedCallback, messageReceivedCallback) {
-        super(serverAddress, statusChangedCallback, messageReceivedCallback);
+    constructor(statusChangedCallback, messageReceivedCallback) {
+        super(statusChangedCallback, messageReceivedCallback);
         this.channelName = "initiatorChannel";
     }
 
@@ -164,7 +162,7 @@ class Initiator extends Peer {
         var thisptr = this;
         var request = new XMLHttpRequest();
 
-        request.open("POST", "http://" + this.serverAddress + "/offer", true);
+        request.open("POST", "/offer", true);
         request.setRequestHeader("Content-Type", "text/plain");   
         request.addEventListener("load",
             () => thisptr.offerSent(request.status, request.responseText));
@@ -190,7 +188,7 @@ class Initiator extends Peer {
     waitForPeer() {
         var thisptr = this;
 
-        this.waitingSource = new EventSource("http://" + this.serverAddress + "/subscribe");
+        this.waitingSource = new EventSource("/subscribe");
         this.waitingSource.onerror = () => {
             thisptr.waitingSource.close();
             thisptr.connectionFailed();
@@ -217,8 +215,8 @@ class Initiator extends Peer {
 }
 
 class Follower extends Peer {
-    constructor(serverAddress, statusChangedCallback, messageReceivedCallback) {
-        super(serverAddress, statusChangedCallback, messageReceivedCallback);
+    constructor(statusChangedCallback, messageReceivedCallback) {
+        super(statusChangedCallback, messageReceivedCallback);
         this.channelName = "followerChannel";
     }
 
@@ -235,7 +233,7 @@ class Follower extends Peer {
         var thisptr = this;
         var request = new XMLHttpRequest();
 
-        request.open("GET", "http://" + this.serverAddress + "/getOffer", true);
+        request.open("GET", "/getOffer", true);
         request.addEventListener("load",
             () => thisptr.offerReceived(request.status, request.responseText));
         request.addEventListener("error",
@@ -281,7 +279,7 @@ class Follower extends Peer {
         var thisptr = this;
         var request = new XMLHttpRequest();
 
-        request.open("POST", "http://" + this.serverAddress + "/answer", true);
+        request.open("POST", "/answer", true);
         request.setRequestHeader("Content-Type", "text/plain");   
         request.addEventListener("load",
             () => thisptr.answerSent(request.status, request.responseText));

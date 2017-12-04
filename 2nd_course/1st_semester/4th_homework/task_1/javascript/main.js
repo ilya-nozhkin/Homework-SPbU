@@ -1,5 +1,6 @@
 const drawRate = 16;
 const tickRate = 8;
+const networkRate = 60;
 
 var canvas = document.getElementById("gameCanvas");
 canvas.width = window.innerWidth * 0.9;
@@ -8,7 +9,6 @@ canvas.height = window.innerHeight * 0.9;
 var context = canvas.getContext("2d");
 
 var connectButton = document.getElementById("connectButton");
-var addressText = document.getElementById("addressText");
 var statusText = document.getElementById("statusText");
 
 var NetworkStatusText = []
@@ -66,6 +66,10 @@ function tick() {
     previousTime = currentTime;
 }
 
+function networking() {
+    game.processNetworking();
+}
+
 document.addEventListener("keydown", (keyboardEvent) => {
     keyboardInput.setState(keyboardEvent.keyCode, true);
 });
@@ -74,7 +78,8 @@ document.addEventListener("keyup", (keyboardEvent) => {
     keyboardInput.setState(keyboardEvent.keyCode, false);
 });
 
-connectButton.addEventListener("click", () => network.connect(addressText.value));
+connectButton.addEventListener("click", () => network.connect());
 
 setInterval(draw, drawRate);
 setInterval(tick, tickRate);
+setInterval(networking, networkRate);
