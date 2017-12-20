@@ -1,0 +1,11 @@
+10
+1 windows   infected sends_messages_to 3 computers 2 3 4
+2 linux     healthy sends_messages_to 1 computer  5
+3 macos     healthy sends_messages_to 1 computer  5
+4 windows   healthy sends_messages_to 1 computer  6
+5 linux     healthy sends_messages_to 2 computer  7 8
+6 macos     healthy sends_messages_to 1 computers 9
+7 windows   healthy sends_messages_to 1 computer  10
+8 linux     healthy sends_messages_to 1 computer  10
+9 macos     healthy sends_messages_to 1 computers 10
+10 linux    healthy sends_messages_to 0 computers

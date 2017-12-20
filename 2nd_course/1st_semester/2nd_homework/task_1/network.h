@@ -4,6 +4,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <fstream>
 #include <functional>
 
 #include <inttypes.h>
@@ -11,7 +12,7 @@
 class Computer
 {
 public:
-    Computer(uint64_t address, std::vector<uint64_t> neighbours);
+    Computer(uint64_t address, std::vector<uint64_t> neighbours, bool infected);
 
     void handshake(std::function<void(uint64_t, std::string)> sendMessage);
 
@@ -25,7 +26,7 @@ private:
     uint64_t address;
 protected:
     bool infected;
-    virtual void backdoor(const std::string &message);
+    virtual void backdoor(const std::string &message) = 0;
 };
 
 class ComputerFactory
@@ -35,12 +36,24 @@ public:
     virtual bool hasNext() = 0;
 };
 
+class FileComputerFactory : public ComputerFactory
+{
+public:
+    FileComputerFactory(std::string filename);
+
+    std::unique_ptr<Computer> produce();
+    bool hasNext();
+private:
+    std::ifstream stream;
+    int number;
+    int counter;
+};
+
 class Router
 {
 public:
     Router(ComputerFactory &factory);
 
-    void forceInfect(uint64_t address);
     void tick();
 
     std::map<uint64_t, bool> scan();
@@ -55,21 +68,21 @@ private:
 
 class WindowsComputer : public Computer {
 public:
-    WindowsComputer(uint64_t address, std::vector<uint64_t> neighbours);
+    WindowsComputer(uint64_t address, std::vector<uint64_t> neighbours, bool infected);
 protected:
     void backdoor(const std::string &message);
 };
 
 class LinuxComputer : public Computer {
 public:
-    LinuxComputer(uint64_t address, std::vector<uint64_t> neighbours);
+    LinuxComputer(uint64_t address, std::vector<uint64_t> neighbours, bool infected);
 private:
     void backdoor(const std::string &message);
 };
 
 class MacOSComputer : public Computer {
 public:
-    MacOSComputer(uint64_t address, std::vector<uint64_t> neighbours);
+    MacOSComputer(uint64_t address, std::vector<uint64_t> neighbours, bool infected);
 private:
     void backdoor(const std::string &message);
 };

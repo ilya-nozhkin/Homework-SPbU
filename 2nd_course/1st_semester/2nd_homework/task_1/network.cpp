@@ -4,7 +4,56 @@
 
 #include <stdlib.h>
 
-static const std::string secretVirusCode = "infect_immediately";
+using namespace std;
+
+FileComputerFactory::FileComputerFactory(std::string filename) : ComputerFactory(), stream(filename)
+{
+    stream >> number;
+    counter = 0;
+}
+
+bool FileComputerFactory::hasNext()
+{
+    return counter < number;
+}
+
+std::unique_ptr<Computer> FileComputerFactory::produce()
+{
+    std::string info;
+    std::string system;
+    std::string infection;
+    uint64_t address = 0;
+
+    int numNeighbours = 0;
+    std::vector<uint64_t> neighbours;
+
+    stream >> address;
+    stream >> system;
+    stream >> infection;
+    stream >> info;
+    stream >> numNeighbours;
+    stream >> info;
+
+    for (int i = 0; i < numNeighbours; i++)
+    {
+        uint64_t neighbour = 0;
+        stream >> neighbour;
+        neighbours.push_back(neighbour);
+    }
+
+    counter++;
+
+    bool infected = infection.compare("infected") == 0;
+
+    if (system == "windows")
+        return unique_ptr<Computer>(new WindowsComputer(address, neighbours, infected));
+    if (system == "linux")
+        return unique_ptr<Computer>(new LinuxComputer(address, neighbours, infected));
+    if (system == "macos")
+        return unique_ptr<Computer>(new MacOSComputer(address, neighbours, infected));
+
+    return nullptr;
+}
 
 Router::Router(ComputerFactory &factory) : network()
 {
@@ -18,11 +67,6 @@ Router::Router(ComputerFactory &factory) : network()
         connectingComputer = std::move(factory.produce());
         connectingComputer->handshake(sendMessageCallback);
     }
-}
-
-void Router::forceInfect(uint64_t address)
-{
-    sendMessage(address, secretVirusCode);
 }
 
 void Router::tick()
@@ -64,11 +108,11 @@ std::map<uint64_t, bool> Router::scan()
     return results;
 }
 
-Computer::Computer(uint64_t address, std::vector<uint64_t> neighbours)
+Computer::Computer(uint64_t address, std::vector<uint64_t> neighbours, bool infected)
 {
     this->address = address;
     this->neighbours = neighbours;
-    infected = false;
+    this->infected = infected;
 }
 
 void Computer::handshake(std::function<void(uint64_t, std::string)> sendMessage)
@@ -102,22 +146,18 @@ bool Computer::scan()
     return infected;
 }
 
-void Computer::backdoor(const std::string &message)
-{
-    if (message == secretVirusCode)
-    {
-        infected = true;
-    }
-}
+WindowsComputer::WindowsComputer(uint64_t address, std::vector<uint64_t> neighbours, bool infected) :
+    Computer(address, neighbours, infected) {}
 
-WindowsComputer::WindowsComputer(uint64_t address, std::vector<uint64_t> neighbours) : Computer(address, neighbours) {}
-LinuxComputer::LinuxComputer(uint64_t address, std::vector<uint64_t> neighbours) : Computer(address, neighbours) {}
-MacOSComputer::MacOSComputer(uint64_t address, std::vector<uint64_t> neighbours) : Computer(address, neighbours) {}
+LinuxComputer::LinuxComputer(uint64_t address, std::vector<uint64_t> neighbours, bool infected) :
+    Computer(address, neighbours, infected) {}
+
+MacOSComputer::MacOSComputer(uint64_t address, std::vector<uint64_t> neighbours, bool infected) :
+    Computer(address, neighbours, infected) {}
 
 // These methods should be very dirty hacks, that's why they can contain code which can be as bad as possible
 
 void WindowsComputer::backdoor(const std::string &message) {
-    Computer::backdoor(message);
     if (message == "virus")
     {
         if (rand() % 100 < 20)
@@ -128,7 +168,6 @@ void WindowsComputer::backdoor(const std::string &message) {
 }
 
 void LinuxComputer::backdoor(const std::string &message) {
-    Computer::backdoor(message);
     if (message == "virus")
     {
         if (rand() % 100 < 10)
@@ -139,7 +178,6 @@ void LinuxComputer::backdoor(const std::string &message) {
 }
 
 void MacOSComputer::backdoor(const std::string &message) {
-    Computer::backdoor(message);
     if (message == "virus")
     {
         if (rand() % 100 < 15)
