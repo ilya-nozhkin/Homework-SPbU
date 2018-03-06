@@ -10,7 +10,7 @@ main = do
     line <- getLine
 
     let input = take (read line) [0,1..] 
-    let output = reverse input
+    let output = mreverse input
 
     putStrLn ("List of n elements: " ++ show input)
     putStrLn ("Reversed: " ++ show output)
