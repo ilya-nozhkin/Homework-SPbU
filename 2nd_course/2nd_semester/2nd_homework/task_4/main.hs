@@ -1,7 +1,7 @@
-find :: Integer -> ([Integer] -> Integer)
-find x = fst . headProtected . filter ((== x) . snd) . zip [1, 2..] where
-    headProtected [] = (-1, -1)
-    headProtected (e:es) = e
+find :: Integer -> ([Integer] -> Maybe Integer)
+find x = head' . filter ((== x) . snd) . zip [1, 2..] where
+    head' [] = Nothing
+    head' (e:es) = Just (fst e)
 
 split :: String -> [String]
 split s = split' s "" [] where
@@ -22,4 +22,4 @@ main = do
     let number = read numberLine
     let output = find number list 
 
-    putStrLn ("The first occurence of this number is in position (-1 means that number is not found): " ++ show output)
+    putStrLn ("The first occurence of this number is in position: " ++ show output)
