@@ -1,8 +1,7 @@
 mreverse :: [a] -> [a]
-mreverse = mreverse where
+mreverse = mreverse' [] where
     mreverse' l [] = l
     mreverse' l (t:ts) = mreverse' (t:l) ts
-    mreverse l = mreverse' l [] 
 
 main :: IO()
 main = do
