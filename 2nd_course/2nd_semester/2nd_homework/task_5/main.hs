@@ -1,3 +1,4 @@
+sumLists :: [Integer] -> [Integer] -> [Integer] -> [Integer]
 sumLists [] [] [] = []
 sumLists a b c = ((head' a) + (head' b) + (head' c)):(sumLists (tail' a) (tail' b) (tail' c)) where
     head' [] = 0
