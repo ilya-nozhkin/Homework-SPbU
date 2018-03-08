@@ -1,7 +1,7 @@
 find :: Integer -> ([Integer] -> Integer)
-find x = fst . headSecured . filter ((== x) . snd) . zip [1, 2..] where
-    headSecured [] = (-1, -1)
-    headSecured (e:es) = e
+find x = fst . headProtected . filter ((== x) . snd) . zip [1, 2..] where
+    headProtected [] = (-1, -1)
+    headProtected (e:es) = e
 
 split :: String -> [String]
 split s = split' s "" [] where
