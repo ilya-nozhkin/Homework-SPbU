@@ -1,5 +1,5 @@
 brackets = [('(', ')'), ('[', ']'), ('{', '}')]
-corresponds a b = any (\p -> (fst p) == a && (snd p) == b) brackets
+isPair a b = any (== (a, b)) brackets
 isOpening a = elem a (map fst brackets)
 isClosing a = elem a (map snd brackets)
 
@@ -8,7 +8,7 @@ checkBrackets s = checkBrackets' [] s where
     checkBrackets' _ "" = False
     checkBrackets' a (c:s) 
       | isOpening c = checkBrackets' (c:a) s
-      | isClosing c = if not (null a) && corresponds (head a) c then checkBrackets' (tail a) s else False
+      | isClosing c = if not (null a) && isPair (head a) c then checkBrackets' (tail a) s else False
       | otherwise = checkBrackets' a s
 
 main :: IO ()
