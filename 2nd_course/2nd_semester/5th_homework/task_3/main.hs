@@ -1,6 +1,6 @@
 import Control.Monad.Zip
 
-mzip3 a b c = mzipWith (\x (y, z) ->  (x, y, z)) a (mzip b c)
+mzip3 a b c = mzipWith (\x (y, z) -> (x, y, z)) a (mzip b c)
 
 findHill :: Ord b => [b] -> Maybe b
 findHill (a:b:c:xs) = (\l -> if (null l) then Nothing else Just (head l))
