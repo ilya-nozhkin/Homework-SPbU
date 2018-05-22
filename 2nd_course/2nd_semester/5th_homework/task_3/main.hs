@@ -1,5 +1,4 @@
 import Control.Monad.Zip
-import Data.List
 
 mzip3 a b c = mzipWith (\x (y, z) ->  (x, y, z)) a (mzip b c)
 
